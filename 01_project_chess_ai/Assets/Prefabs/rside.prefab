@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 850865662604737280}
   - component: {fileID: 6742477030275144798}
-  m_Layer: 9
+  m_Layer: 10
   m_Name: rside
   m_TagString: Board
   m_Icon: {fileID: 0}
@@ -65,8 +65,8 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
+  m_SortingLayerID: 49770363
+  m_SortingLayer: 1
   m_SortingOrder: 0
   m_Sprite: {fileID: 21300000, guid: 4d7ee4f868d88c440b34afd8251c95d2, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
