@@ -25,10 +25,17 @@ public class pawn_mech : MonoBehaviour
 		RaycastHit2D select = Physics2D.Raycast(Camera.main.ScreenToWorldPoint(mousePos), Vector2.zero);
 		if(select && select.transform.gameObject.tag == "Piece")
 		{
-			Debug.Log("Grabbed");
-
-			selected = true;
+			if(selected)
+			{
+				selected = false;	
+				Vector3 gridPos = new Vector3(Mathf.Round(Input.mousePosition.x), Mathf.Round(Input.mousePosition.y), 10f);
+				transform.position = Camera.main.ScreenToWorldPoint(gridPos);
+				transform.position = new Vector3(Mathf.Round(transform.position.x),Mathf.Round(transform.position.y),10f);
+			}
+			else
+				selected = true;
 		}
+
     }
     private void move()
     {
