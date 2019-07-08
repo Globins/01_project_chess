@@ -3,10 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 
 //Checklist:
-//Implement Attacked: if an object is there and its a valid attack, then it replaces that object's position.
-//Implement blocked: if an object is there in valid movement, then it returns piece to original spot
-//GET COLLISION TO WORK
-
+//Figure out how ot make the objects not move when touching AND collide
+//Implement attack
 
 
 
@@ -18,29 +16,33 @@ public class pawn_mech : MonoBehaviour
 	private bool selected = false;
 	private SpriteRenderer thisPiece;
 	private Vector2 currentPos;
+	private Vector2 priorPos;
 	private bool firstMove = true;
-	private bool playersTurn = true; //Temporary, will be put in game instance
+	private bool validAttack = false;
 
     // Start is called before the first frame update
     void Start()
     {
         thisPiece = GetComponent<SpriteRenderer>();
         currentPos = new Vector2(transform.position.x, transform.position.y);
+        priorPos = currentPos;
     }
 
     // Update is called once per frame
     void Update()
     {
+    	Debug.Log(currentPos + "" + priorPos);
     	if(Input.GetMouseButtonDown(0))
-    	{
         	onClick();
-    	}
         if(selected)
         	move();
+        if(!selected)
+        	refresh();
     }
     
     private void onClick()
     {
+    	//on click, it positions itself in the grid and ends turn
 		Vector2 mousePos = new Vector2(Input.mousePosition.x, Input.mousePosition.y);
 		RaycastHit2D select = Physics2D.Raycast(Camera.main.ScreenToWorldPoint(mousePos), Vector2.zero);
 
@@ -50,42 +52,60 @@ public class pawn_mech : MonoBehaviour
 		temp = new Vector3(Mathf.Round(temp.x),Mathf.Round(temp.y),0);
 		float deltax = temp.x-currentPos.x;
 		float deltay = temp.y-currentPos.y;
-
-		//on click, it positions itself in the grid and ends turn
-		if(select && select.transform.gameObject.tag == "Piece")
+		
+		//if the object wasnt selected, it becomes selected and follows mouse
+		if(select && select.transform.gameObject.tag == "Piece" &&
+			Mathf.Abs(deltay) == 0 && Mathf.Abs(deltax) == 0 && !GameManager.instance.hasPieceInHand)
 		{
-			if(!selected && Mathf.Abs(deltay) == 0 && Mathf.Abs(deltax) == 0) //if the object wasnt selected, it becomes selected and follows mouse
+			priorPos = currentPos;
+			selected = true;
+			gameObject.layer = 8;
+			thisPiece.sortingLayerName = "Highlight";
+			GameManager.instance.hasPieceInHand = true;
+		}
+
+		else if(selected)
+		{
+			if(deltay != 0 && Mathf.Abs(deltay) <= 2 && (Mathf.Abs(deltax) == 1 || Mathf.Abs(deltax) == 0))
 			{
-				selected = true;
-				gameObject.layer = 8;
-				thisPiece.sortingLayerName = "Highlight";
-			}
-			else if(selected && deltax == 0 && deltay != 0 && Mathf.Abs(deltay) <= 2) 
-			{
-				gameObject.layer = 9;
-				thisPiece.sortingLayerName = "Piece";
-				selected = false;
-				if((playersTurn && deltay < 0) || (!playersTurn && deltay > 0) || (Mathf.Abs(deltay) == 2 && !firstMove))
+				//Invalid move
+				if((GameManager.instance.playersTurn && deltay < 0) ||
+					(!GameManager.instance.playersTurn && deltay > 0) ||
+					(Mathf.Abs(deltay) == 2 && !firstMove)
+					)
 					{
 						transform.position = currentPos;
 					}
+				//Attack Move
+				else if(Mathf.Abs(deltax) == 1 && Mathf.Abs(deltay) == 1)
+				{
+					transform.position = temp;
+					currentPos = new Vector2(transform.position.x, transform.position.y);
+					firstMove = false;
+					validAttack = true;
+				}
+				//valid move
 				else
 				{
 					transform.position = temp;
 					currentPos = new Vector2(transform.position.x, transform.position.y);
 					firstMove = false;
-				}
+				}	
 			}
-			else //if click on any invalid spot it returns the pieces to its original place
+			 //if click on any invalid spot it returns the pieces to its original place
+			else
 			{
 				transform.position = currentPos;
-				selected = false;
-				gameObject.layer = 9;
-				thisPiece.sortingLayerName = "Piece";
 			}
+			gameObject.layer = 9;
+			thisPiece.sortingLayerName = "Piece";
+			GameManager.instance.hasPieceInHand = false;
+			selected = false;
 		}
-
     }
+
+
+
     private void move()
     {
     	Vector3 mousePos = new Vector3(Input.mousePosition.x, Input.mousePosition.y, 0f);
@@ -93,12 +113,24 @@ public class pawn_mech : MonoBehaviour
     	transform.position = Camera.main.ScreenToWorldPoint(mousePos);
     }
 
+    private void refresh()
+    {
+		transform.position = currentPos;
+		selected = false;
+		gameObject.layer = 9;
+		thisPiece.sortingLayerName = "Piece";
+    }
+
 	void OnCollisionEnter2D(Collision2D other)
 	{
-		if(other.gameObject.tag == "Piece" && gameObject.layer == other.gameObject.layer)
+		if(other.gameObject.tag == "Piece" && gameObject.layer == other.gameObject.layer && validAttack)
 		{
-			Debug.Log("Annoy");
+			validAttack = false;
 			Destroy(other.gameObject);
+		}
+		else
+		{
+			currentPos = priorPos;
 		}
 	}
 }

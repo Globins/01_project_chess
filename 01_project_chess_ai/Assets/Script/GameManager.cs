@@ -7,7 +7,9 @@ public class GameManager : MonoBehaviour
     public static GameManager instance = null;
     private BoardManager boardScript;
     private int level = 3;
-
+    public bool hasPieceInHand = false;
+    public bool playersTurn = true;
+    
     void Awake()
     {
         if (instance == null)

@@ -3,7 +3,10 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 2
-  tags: []
+  tags:
+  - Piece
+  - Board
+  - Highlight
   layers:
   - Default
   - TransparentFX
@@ -13,9 +16,9 @@ TagManager:
   - UI
   - 
   - 
-  - 
-  - 
-  - 
+  - Highlight
+  - Piece
+  - Board
   - 
   - 
   - 
@@ -40,4 +43,13 @@ TagManager:
   m_SortingLayers:
   - name: Default
     uniqueID: 0
+    locked: 0
+  - name: Board
+    uniqueID: 49770363
+    locked: 0
+  - name: Piece
+    uniqueID: 1557291923
+    locked: 0
+  - name: Highlight
+    uniqueID: 1785386275
     locked: 0
