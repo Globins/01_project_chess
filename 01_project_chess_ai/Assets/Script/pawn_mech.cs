@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 
 //Checklist:
-//Figure out collision glitch where objects are not registering the collision until a reset
 
 //Add function where it can turn into any lost pieces when it edges the edge
 
@@ -16,6 +15,7 @@ public class pawn_mech : MonoBehaviour
 	private bool firstMove = true;
 	private bool validAttack = false;
 	private bool isTouching = false;
+	private Collision2D cancer;
 
     // Start is called before the first frame update
     void Start()
@@ -61,20 +61,23 @@ public class pawn_mech : MonoBehaviour
 
 		else if(selected)
 		{
-			if(deltay != 0 && Mathf.Abs(deltay) <= 2 && (Mathf.Abs(deltax) == 1 || Mathf.Abs(deltax) == 0) && 
+			if(deltay != 0 && Mathf.Abs(deltay) <= 2 && (Mathf.Abs(deltax) == 1 || deltax == 0) && 
 				((temp.y >= 0 && temp.y <= 7) && (temp.x >= 0 && temp.x <= 7)))
 			{
-								//Invalid move within correct bounds
+				Debug.Log("Click");
+				//Invalid move within correct bounds
 				if((GameManager.instance.playersTurn && deltay < 0) ||
 					(!GameManager.instance.playersTurn && deltay > 0) ||
 					(Mathf.Abs(deltay) == 2 && !firstMove) || (isTouching && Mathf.Abs(deltax) != 1))
 				{
+					Debug.Log("Invalid");
 					transform.position = currentPos;
 				}
 
 				//Attack Move fix so it cant move unless a piece is there
 				else if(Mathf.Abs(deltax) == 1 && Mathf.Abs(deltay) == 1 && isTouching)
 				{
+					Debug.Log("Attack");
 					transform.position = temp;
 					currentPos = new Vector2(transform.position.x, transform.position.y);
 					firstMove = false;
@@ -82,8 +85,9 @@ public class pawn_mech : MonoBehaviour
 					isTouching = false;
 				}
 				//valid move
-				else
+				else if(deltax == 0)
 				{
+					Debug.Log("Move");
 					transform.position = temp;
 					currentPos = new Vector2(transform.position.x, transform.position.y);
 					firstMove = false;
@@ -92,6 +96,7 @@ public class pawn_mech : MonoBehaviour
 			 //if click on any invalid spot it returns the pieces to its original place
 			else
 			{
+				Debug.Log("reset");
 				transform.position = currentPos;
 			}
 			//resets the piece to being still after click
@@ -111,6 +116,11 @@ public class pawn_mech : MonoBehaviour
 
     private void refresh()
     {
+    	if(validAttack)
+    	{
+    		Destroy(cancer.gameObject);
+    		validAttack = false;
+    	}
     	isTouching = false;
 		transform.position = currentPos;
 		priorPos = currentPos;
@@ -122,12 +132,12 @@ public class pawn_mech : MonoBehaviour
 	void OnCollisionEnter2D(Collision2D other)
 	{
 		isTouching = true;
-		Debug.Log("hehe");
+		cancer = other;
 		if(other.gameObject.tag == "Piece" && gameObject.layer == other.gameObject.layer && validAttack)
 		{
 			Debug.Log("OI");
 			validAttack = false;
-			Destroy(other.	gameObject);
+			Destroy(other.gameObject);
 		}
 		else
 		{
