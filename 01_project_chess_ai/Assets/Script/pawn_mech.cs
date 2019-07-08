@@ -3,10 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 //Checklist:
-//Figure out how ot make the objects not move when touching AND collide
-//Implement attack
-
-
+//Figure out collision glitch where objects are not registering the collision until a reset
 
 //Restrict to edge of board
 //Add function where it can turn into any lost pieces when it edges the edge
@@ -19,6 +16,7 @@ public class pawn_mech : MonoBehaviour
 	private Vector2 priorPos;
 	private bool firstMove = true;
 	private bool validAttack = false;
+	private bool isTouching = false;
 
     // Start is called before the first frame update
     void Start()
@@ -31,7 +29,6 @@ public class pawn_mech : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-    	Debug.Log(currentPos + "" + priorPos);
     	if(Input.GetMouseButtonDown(0))
         	onClick();
         if(selected)
@@ -52,7 +49,7 @@ public class pawn_mech : MonoBehaviour
 		temp = new Vector3(Mathf.Round(temp.x),Mathf.Round(temp.y),0);
 		float deltax = temp.x-currentPos.x;
 		float deltay = temp.y-currentPos.y;
-		
+		Debug.Log(temp.y + " " + temp.x);
 		//if the object wasnt selected, it becomes selected and follows mouse
 		if(select && select.transform.gameObject.tag == "Piece" &&
 			Mathf.Abs(deltay) == 0 && Mathf.Abs(deltax) == 0 && !GameManager.instance.hasPieceInHand)
@@ -66,24 +63,25 @@ public class pawn_mech : MonoBehaviour
 
 		else if(selected)
 		{
-			if(deltay != 0 && Mathf.Abs(deltay) <= 2 && (Mathf.Abs(deltax) == 1 || Mathf.Abs(deltax) == 0))
+			if(deltay != 0 && Mathf.Abs(deltay) <= 2 && (Mathf.Abs(deltax) == 1 || Mathf.Abs(deltax) == 0) && 
+				((temp.y >= 0 && temp.y <= 7) && (temp.x >= 0 && temp.x <= 7)))
 			{
-				//Invalid move
-				if((GameManager.instance.playersTurn && deltay < 0) ||
-					(!GameManager.instance.playersTurn && deltay > 0) ||
-					(Mathf.Abs(deltay) == 2 && !firstMove)
-					)
-					{
-						transform.position = currentPos;
-					}
-				//Attack Move
-				else if(Mathf.Abs(deltax) == 1 && Mathf.Abs(deltay) == 1)
+				//Attack Move fix so it cant move unless a piece is there
+				if(Mathf.Abs(deltax) == 1 && Mathf.Abs(deltay) == 1 && isTouching)
 				{
 					transform.position = temp;
 					currentPos = new Vector2(transform.position.x, transform.position.y);
 					firstMove = false;
 					validAttack = true;
+					isTouching = false;
 				}
+				//Invalid move within correct bounds
+				else if((GameManager.instance.playersTurn && deltay < 0) ||
+					(!GameManager.instance.playersTurn && deltay > 0) ||
+					(Mathf.Abs(deltay) == 2 && !firstMove) || isTouching)
+					{
+						transform.position = currentPos;
+					}
 				//valid move
 				else
 				{
@@ -97,14 +95,13 @@ public class pawn_mech : MonoBehaviour
 			{
 				transform.position = currentPos;
 			}
+			//resets the piece to being still after click
 			gameObject.layer = 9;
 			thisPiece.sortingLayerName = "Piece";
 			GameManager.instance.hasPieceInHand = false;
 			selected = false;
 		}
     }
-
-
 
     private void move()
     {
@@ -115,6 +112,7 @@ public class pawn_mech : MonoBehaviour
 
     private void refresh()
     {
+    	isTouching = false;
 		transform.position = currentPos;
 		selected = false;
 		gameObject.layer = 9;
@@ -123,6 +121,7 @@ public class pawn_mech : MonoBehaviour
 
 	void OnCollisionEnter2D(Collision2D other)
 	{
+		isTouching = true;
 		if(other.gameObject.tag == "Piece" && gameObject.layer == other.gameObject.layer && validAttack)
 		{
 			validAttack = false;
