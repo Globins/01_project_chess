@@ -5,7 +5,6 @@ using UnityEngine;
 //Checklist:
 //Figure out collision glitch where objects are not registering the collision until a reset
 
-//Restrict to edge of board
 //Add function where it can turn into any lost pieces when it edges the edge
 
 public class pawn_mech : MonoBehaviour
@@ -49,7 +48,6 @@ public class pawn_mech : MonoBehaviour
 		temp = new Vector3(Mathf.Round(temp.x),Mathf.Round(temp.y),0);
 		float deltax = temp.x-currentPos.x;
 		float deltay = temp.y-currentPos.y;
-		Debug.Log(temp.y + " " + temp.x);
 		//if the object wasnt selected, it becomes selected and follows mouse
 		if(select && select.transform.gameObject.tag == "Piece" &&
 			Mathf.Abs(deltay) == 0 && Mathf.Abs(deltax) == 0 && !GameManager.instance.hasPieceInHand)
@@ -78,7 +76,8 @@ public class pawn_mech : MonoBehaviour
 				//Invalid move within correct bounds
 				else if((GameManager.instance.playersTurn && deltay < 0) ||
 					(!GameManager.instance.playersTurn && deltay > 0) ||
-					(Mathf.Abs(deltay) == 2 && !firstMove) || isTouching)
+					(Mathf.Abs(deltay) == 2 && !firstMove) || isTouching ||
+					Mathf.Abs(deltax) == 1)
 					{
 						transform.position = currentPos;
 					}
@@ -120,10 +119,11 @@ public class pawn_mech : MonoBehaviour
     }
 
 	void OnCollisionEnter2D(Collision2D other)
-	{
+	{		
 		isTouching = true;
-		if(other.gameObject.tag == "Piece" && gameObject.layer == other.gameObject.layer && validAttack)
+		if(other.gameObject.tag == "Piece" && gameObject.layer == other.gameObject.layer&&validAttack)
 		{
+			Debug.Log("OI");
 			validAttack = false;
 			Destroy(other.gameObject);
 		}
@@ -131,5 +131,9 @@ public class pawn_mech : MonoBehaviour
 		{
 			currentPos = priorPos;
 		}
+	}
+	void OnCollisionExit2D(Collision2D other)
+	{		
+		isTouching = false;
 	}
 }
