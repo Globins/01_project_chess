@@ -64,8 +64,16 @@ public class pawn_mech : MonoBehaviour
 			if(deltay != 0 && Mathf.Abs(deltay) <= 2 && (Mathf.Abs(deltax) == 1 || Mathf.Abs(deltax) == 0) && 
 				((temp.y >= 0 && temp.y <= 7) && (temp.x >= 0 && temp.x <= 7)))
 			{
+								//Invalid move within correct bounds
+				if((GameManager.instance.playersTurn && deltay < 0) ||
+					(!GameManager.instance.playersTurn && deltay > 0) ||
+					(Mathf.Abs(deltay) == 2 && !firstMove) || (isTouching && Mathf.Abs(deltax) != 1))
+				{
+					transform.position = currentPos;
+				}
+
 				//Attack Move fix so it cant move unless a piece is there
-				if(Mathf.Abs(deltax) == 1 && Mathf.Abs(deltay) == 1 && isTouching)
+				else if(Mathf.Abs(deltax) == 1 && Mathf.Abs(deltay) == 1 && isTouching)
 				{
 					transform.position = temp;
 					currentPos = new Vector2(transform.position.x, transform.position.y);
@@ -73,14 +81,6 @@ public class pawn_mech : MonoBehaviour
 					validAttack = true;
 					isTouching = false;
 				}
-				//Invalid move within correct bounds
-				else if((GameManager.instance.playersTurn && deltay < 0) ||
-					(!GameManager.instance.playersTurn && deltay > 0) ||
-					(Mathf.Abs(deltay) == 2 && !firstMove) || isTouching ||
-					Mathf.Abs(deltax) == 1)
-					{
-						transform.position = currentPos;
-					}
 				//valid move
 				else
 				{
@@ -113,19 +113,21 @@ public class pawn_mech : MonoBehaviour
     {
     	isTouching = false;
 		transform.position = currentPos;
+		priorPos = currentPos;
 		selected = false;
 		gameObject.layer = 9;
 		thisPiece.sortingLayerName = "Piece";
     }
 
 	void OnCollisionEnter2D(Collision2D other)
-	{		
+	{
 		isTouching = true;
-		if(other.gameObject.tag == "Piece" && gameObject.layer == other.gameObject.layer&&validAttack)
+		Debug.Log("hehe");
+		if(other.gameObject.tag == "Piece" && gameObject.layer == other.gameObject.layer && validAttack)
 		{
 			Debug.Log("OI");
 			validAttack = false;
-			Destroy(other.gameObject);
+			Destroy(other.	gameObject);
 		}
 		else
 		{
