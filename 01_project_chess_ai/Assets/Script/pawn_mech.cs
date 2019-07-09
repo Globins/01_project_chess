@@ -13,12 +13,14 @@ public class pawn_mech : MonoBehaviour
 	private Vector2 gridPos;
 	private bool selected = false;
 	private bool firstMove = true;
+	private bool alive = true;
 
     // Start is called before the first frame update
     void Start()
     {
         thisPiece = GetComponent<SpriteRenderer>();
         priorPos = new Vector2(transform.position.x, transform.position.y);
+        GameManager.pieceLocation.Add(priorPos,alive);
     }
 
     // Update is called once per frame
@@ -30,6 +32,12 @@ public class pawn_mech : MonoBehaviour
         	onClick();
         if(selected)
         	moveWithMouse();
+        Debug.Log(alive);
+        if(!alive)
+        {
+        	GameManager.pieceLocation.Remove(new Vector2(transform.position.x, transform.position.y));
+        	Destroy(this);
+        }
     }
     
     private void onClick()
@@ -50,57 +58,60 @@ public class pawn_mech : MonoBehaviour
 
 		else if(selected)
 		{
-
-/*			if(((gridPos.y < 0 && gridPos.y > 7) && (gridPos.x < 0 && gridPos.x > 7)) ||
+			if(((gridPos.y < 0 && gridPos.y > 7) && (gridPos.x < 0 && gridPos.x > 7)) ||
 				(GameManager.instance.playersTurn && deltay < 0) || 
-				(!GameManager.instance.playersTurn && deltay > 0))
+				(!GameManager.instance.playersTurn && deltay > 0) ||
+				(!firstMove && Mathf.Abs(deltay) == 2))
 			{
 				Debug.Log("reset");
-				transform.position = currentPos;
+				GameManager.instance.reset_piece = true;
+				transform.position = priorPos;
 			}
-			else if(Mathf.Abs(deltax) == 1 && Mathf.Abs(deltay) == 1 && that_tile_is_occupied)
+			else if(Mathf.Abs(deltax) == 1 && Mathf.Abs(deltay) == 1 && GameManager.occupiedSpots[new Vector2(gridPos.x, gridPos.y)])
 			{
-				capture(tile_x,tile_y,tile object); //removes the object there and makes tile unoccupied
-				move_piece(x,y,gridPos)
+				capture(gridPos); //removes the object there and makes tile unoccupied
+				move_piece(deltax,deltay,gridPos);
 			}
-			else if(new []{1, 2}.Contains(Mathf.Abs(deltay)) && that_tile_is_not_occupied)
+			else if(new List<float>{1, 2}.Contains(Mathf.Abs(deltay)) && !GameManager.occupiedSpots[new Vector2(gridPos.x, gridPos.y)])
 			{
-				move_piece(x,y,gridPos); //places object there
+				move_piece(deltax,deltay,gridPos); //places object there
 			}
 			else
 			{
 				Debug.Log("reset");
-				transform.position = currentPos;
+				GameManager.instance.reset_piece = true;
+				transform.position = priorPos;
 			}
 			land_piece_set();
 			//((temp.y >= 0 && temp.y <= 7) && (temp.x >= 0 && temp.x <= 7)) board bounds
 			//(GameManager.instance.playersTurn && deltaPos.y < 0) || (!GameManager.instance.playersTurn && deltaPos.y > 0) 
-			*/
 		}
     }
 
     //deals with capturing
-    private void capture(float x, float y)
+    private void capture(Vector2 remove_object_here)
     {
     	//get object thats there, delete it
     	Debug.Log("Attack");
     	if(firstMove)
     		firstMove = false;
+    	GameManager.pieceLocation[new Vector2(remove_object_here.x, remove_object_here.y)] = false;
+    	GameManager.occupiedSpots[new Vector2(remove_object_here.x, remove_object_here.y)] = false;
     }
 
     //deals with moving into an empty square, will only be called if outside parameters are correct
-    private void move_piece(float x, float y, Vector2 gridPos)
+    private void move_piece(float x, float y, Vector2 move_here)
     {
-    	if(x == 0 || x == 1)
+    	if(x == 0 || x == 1 || x == -1)
 		{
 			//enPassant
-	    	if(y == 2 && firstMove)
+	    	if(y == 2 && firstMove && GameManager.occupiedSpots[new Vector2(move_here.x, move_here.y-1)])
 	    	{
-	    		//if that square is occupied add tile object
-	    			capture(x, y-1);
+    			Vector2 remove_this = new Vector2(move_here.x, move_here.y-1);
+    			capture(remove_this);
 	    	}
 			Debug.Log("Move");
-			transform.position = gridPos;
+			transform.position = move_here;
 			priorPos = new Vector2(transform.position.x, transform.position.y);
 	    	if(firstMove)
 				firstMove = false;
@@ -135,40 +146,4 @@ public class pawn_mech : MonoBehaviour
 		GameManager.instance.hasPieceInHand = false;
 		selected = false;
     }
-
-/*    //Try to remove the functions below.
-    private void refresh()
-    {
-    	if(validAttack)
-    	{
-    		Destroy(cancer.gameObject);
-    		validAttack = false;
-    	}
-    	isTouching = false;
-		transform.position = currentPos;
-		priorPos = currentPos;
-		selected = false;
-		gameObject.layer = 9;
-		thisPiece.sortingLayerName = "Piece";
-    }
-
-	void OnCollisionEnter2D(Collision2D other)
-	{
-		isTouching = true;
-		cancer = other;
-		if(other.gameObject.tag == "Piece" && gameObject.layer == other.gameObject.layer && validAttack)
-		{
-			Debug.Log("OI");
-			validAttack = false;
-			Destroy(other.gameObject);
-		}
-		else
-		{
-			currentPos = priorPos;
-		}
-	}
-	void OnCollisionExit2D(Collision2D other)
-	{		
-		isTouching = false;
-	}*/
 }
