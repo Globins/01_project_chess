@@ -8,4 +8,8 @@ public abstract class Piece : MonoBehaviour
 	{
 		Debug.Log("Broke");
 	}
+	public virtual bool player_check()
+	{
+		return false;
+	}
 }

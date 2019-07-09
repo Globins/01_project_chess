@@ -14,6 +14,7 @@ public class king_mech : Piece
 	private bool selected = false;
 	private bool refreshOnStart = true;
 	private bool alive = true;
+	private bool is_player = false;
 
     // Start is called before the first frame update
     void Start()
@@ -21,6 +22,10 @@ public class king_mech : Piece
         thisPiece = GetComponent<SpriteRenderer>();
         priorPos = new Vector2(transform.position.x, transform.position.y);
         GameManager.pieceLocation.Add(priorPos,this);
+        if(priorPos.y == 0 || priorPos.y == 1)
+        {
+        	is_player = true;
+        }
     }
     // Update is called once per frame
     void Update()
@@ -99,16 +104,28 @@ public class king_mech : Piece
     //deals with moving into an empty square, will only be called if outside parameters are correct
     private void move_piece(float x, float y, Vector2 move_here)
     {
-		//enPassant
+		bool refresh = false;
     	if(GameManager.occupiedSpots[move_here])
     	{
-			capture(move_here);
+    		if(GameManager.pieceLocation[move_here].player_check())
+    			refresh = true;
+    		else
+				capture(move_here);
     	}
-		transform.position = move_here;
-    	GameManager.pieceLocation.Remove(priorPos);
-		GameManager.occupiedSpots[priorPos] = false;
-		priorPos = new Vector2(transform.position.x, transform.position.y);
-		GameManager.pieceLocation.Add(priorPos,this);
+    	if(!refresh)
+		{
+			transform.position = move_here;
+	    	GameManager.pieceLocation.Remove(priorPos);
+			GameManager.occupiedSpots[priorPos] = false;
+			priorPos = new Vector2(transform.position.x, transform.position.y);
+			GameManager.pieceLocation.Add(priorPos,this);
+		}
+		else
+		{
+			Debug.Log("R2");
+			GameManager.instance.reset_piece = true;
+			transform.position = priorPos;
+		}
     }
 
     //picks up the piece if it wasnt selected
@@ -142,5 +159,9 @@ public class king_mech : Piece
     public override void kill()
     {
         alive = false;
+    }
+    public override bool player_check()
+    {
+        return is_player;
     }
 }

@@ -6,7 +6,7 @@ using UnityEngine;
 
 //Add function where it can turn into any lost pieces when it edges the edge
 
-public class knight_mech : Piece
+public class rook_mech : Piece
 {
 	private SpriteRenderer thisPiece;
 	private Vector2 priorPos;
@@ -15,6 +15,7 @@ public class knight_mech : Piece
 	private bool refreshOnStart = true;
 	private bool alive = true;
 	private bool is_player = false;
+	private float boundary = 0;
 
     // Start is called before the first frame update
     void Start()
@@ -22,7 +23,7 @@ public class knight_mech : Piece
         thisPiece = GetComponent<SpriteRenderer>();
         priorPos = new Vector2(transform.position.x, transform.position.y);
         GameManager.pieceLocation.Add(priorPos,this);
-    	if(priorPos.y == 0 || priorPos.y == 1)
+        if(priorPos.y == 0 || priorPos.y == 1)
         {
         	is_player = true;
         }
@@ -56,6 +57,8 @@ public class knight_mech : Piece
 		gridPos = GameManager.instance.mouseToGrid(Input.mousePosition.x, Input.mousePosition.y, priorPos);
         float deltax = gridPos.x-priorPos.x;
         float deltay = gridPos.y-priorPos.y;
+        //create boundary for the delta so it cant move past an object
+
 		//if the object wasnt selected, it becomes selected and follows mouse
 		if(select && select.transform.gameObject.tag == "Piece" &&
 			Mathf.Abs(deltay) == 0 && Mathf.Abs(deltax) == 0 && 
@@ -75,7 +78,7 @@ public class knight_mech : Piece
 				GameManager.instance.reset_piece = true;
 				transform.position = priorPos;
 			}
-			else if((Mathf.Abs(deltay) == 1 && Mathf.Abs(deltax) == 2) || (Mathf.Abs(deltax) == 1 && Mathf.Abs(deltay) == 2))
+			else if(Mathf.Abs(deltax) == 0 || Mathf.Abs(deltay) == 0)
 			{
 				Debug.Log("M");
 				move_piece(deltax,deltay,gridPos); //places object there
@@ -103,28 +106,28 @@ public class knight_mech : Piece
     //deals with moving into an empty square, will only be called if outside parameters are correct
     private void move_piece(float x, float y, Vector2 move_here)
     {
-    	bool refresh = false;
-    	if(GameManager.occupiedSpots[move_here])
-    	{
-    		if(GameManager.pieceLocation[move_here].player_check())
-    			refresh = true;
-    		else
-				capture(move_here);
-    	}
-    	if(!refresh)
-		{
-			transform.position = move_here;
-	    	GameManager.pieceLocation.Remove(priorPos);
-			GameManager.occupiedSpots[priorPos] = false;
-			priorPos = new Vector2(transform.position.x, transform.position.y);
-			GameManager.pieceLocation.Add(priorPos,this);
-		}
-		else
-		{
-			Debug.Log("R2");
-			GameManager.instance.reset_piece = true;
-			transform.position = priorPos;
-		}
+        bool refresh = false;
+        if(GameManager.occupiedSpots[move_here])
+        {
+            if(GameManager.pieceLocation[move_here].player_check())
+                refresh = true;
+            else
+                capture(move_here);
+        }
+        if(!refresh)
+        {
+            transform.position = move_here;
+            GameManager.pieceLocation.Remove(priorPos);
+            GameManager.occupiedSpots[priorPos] = false;
+            priorPos = new Vector2(transform.position.x, transform.position.y);
+            GameManager.pieceLocation.Add(priorPos,this);
+        }
+        else
+        {
+            Debug.Log("R2");
+            GameManager.instance.reset_piece = true;
+            transform.position = priorPos;
+        }
     }
 
     //picks up the piece if it wasnt selected

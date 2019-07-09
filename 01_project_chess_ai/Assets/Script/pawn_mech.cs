@@ -15,6 +15,7 @@ public class pawn_mech : Piece
 	private bool firstMove = true;
 	private bool refreshOnStart = true;
 	private bool alive = true;
+	private bool is_player = false;
 
     // Start is called before the first frame update
     void Start()
@@ -22,6 +23,10 @@ public class pawn_mech : Piece
         thisPiece = GetComponent<SpriteRenderer>();
         priorPos = new Vector2(transform.position.x, transform.position.y);
         GameManager.pieceLocation.Add(priorPos,this);
+        if(priorPos.y == 0 || priorPos.y == 1)
+        {
+        	is_player = true;
+        }
     }
     // Update is called once per frame
     void Update()
@@ -52,6 +57,7 @@ public class pawn_mech : Piece
 		gridPos = GameManager.instance.mouseToGrid(Input.mousePosition.x, Input.mousePosition.y, priorPos);
         float deltax = gridPos.x-priorPos.x;
         float deltay = gridPos.y-priorPos.y;
+        bool refresh = false;
 		//if the object wasnt selected, it becomes selected and follows mouse
 		if(select && select.transform.gameObject.tag == "Piece" &&
 			Mathf.Abs(deltay) == 0 && Mathf.Abs(deltax) == 0 && 
@@ -77,8 +83,13 @@ public class pawn_mech : Piece
 				GameManager.occupiedSpots[new Vector2(priorPos.x+deltax, priorPos.y+deltay)])
 			{
 				Debug.Log("A");
-				capture(gridPos); //removes the object there and makes tile unoccupied
-				move_piece(deltax,deltay,gridPos);
+	    		if(GameManager.pieceLocation[new Vector2(priorPos.x+deltax, priorPos.y+deltay)].player_check())
+	    			refresh = true;
+	    		else
+	    		{
+					capture(gridPos);
+					move_piece(deltax,deltay,gridPos);
+	    		}
 			}
 			else if(new List<float>{1, 2}.Contains(Mathf.Abs(deltay)) &&
 				(!GameManager.occupiedSpots[gridPos] && deltax == 0))
@@ -88,6 +99,12 @@ public class pawn_mech : Piece
 			}
 			//Default case
 			else
+			{
+				Debug.Log("R2");
+				GameManager.instance.reset_piece = true;
+				transform.position = priorPos;
+			}
+			if(refresh)
 			{
 				Debug.Log("R2");
 				GameManager.instance.reset_piece = true;
@@ -116,8 +133,11 @@ public class pawn_mech : Piece
 			//enPassant
 	    	if(y == 2 && firstMove && GameManager.occupiedSpots[new Vector2(move_here.x, move_here.y-1)])
 	    	{
-    			Vector2 remove_this = new Vector2(move_here.x, move_here.y-1);
-    			capture(remove_this);
+	    		if(!GameManager.pieceLocation[new Vector2(move_here.x, move_here.y-1)].player_check())
+ 				{
+ 					Vector2 remove_this = new Vector2(move_here.x, move_here.y-1);
+     				capture(remove_this);
+     			}
 	    	}
 			transform.position = move_here;
 	    	GameManager.pieceLocation.Remove(priorPos);
@@ -160,5 +180,9 @@ public class pawn_mech : Piece
     public override void kill()
     {
         alive = false;
+    }
+    public override bool player_check()
+    {
+        return is_player;
     }
 }
