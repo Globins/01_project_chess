@@ -6,6 +6,7 @@ public class GameManager : MonoBehaviour
 {
     public static GameManager instance = null;
     private BoardManager boardScript;
+    public static Dictionary<Vector2, bool> occupiedSpots = new Dictionary<Vector2, bool>();
     public int pickDelay = 0;
     public bool hasPieceInHand = false;
     public bool playersTurn = true;
@@ -29,8 +30,11 @@ public class GameManager : MonoBehaviour
     {
         if(pickDelay > 0)
             pickDelay--;
+        if(occupiedSpots.Count == 0)
+            Debug.Log("Haha");
+        Debug.Log("Hehe");
     }
-    
+
     public Vector2 mouseToGrid(float x, float y, Vector2 current)
     {
         Vector3 first = new Vector3(Mathf.Round(x), Mathf.Round(y), 10f);

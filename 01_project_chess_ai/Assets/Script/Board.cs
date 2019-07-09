@@ -15,6 +15,7 @@ public class Board : MonoBehaviour
         if(currentPos.y == 0 || currentPos.y == 1 || currentPos.y == 8 || currentPos.y == 7)
         {
         	occupied = true;
+        	GameManager.occupiedSpots.Add(currentPos,occupied);
         }
     }
 
