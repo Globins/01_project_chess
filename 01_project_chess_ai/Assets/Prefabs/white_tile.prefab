@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 1290247601844020256}
   - component: {fileID: 5168751070889919358}
   - component: {fileID: -4385247224072671298}
+  - component: {fileID: 5952056262319503605}
   m_Layer: 10
   m_Name: white_tile
   m_TagString: Board
@@ -26,7 +27,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 611990864439292709}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.407, y: 0.184, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -92,3 +93,32 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d64cd4ee29aca6c4ab7f56bd781536d9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  test: {fileID: 21300000, guid: 69d60a29987ec8c4c910db847bae308b, type: 3}
+  test2: {fileID: 21300000, guid: e0edec859df63df4d97a979176f04309, type: 3}
+  occupied: 0
+--- !u!61 &5952056262319503605
+BoxCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 611990864439292709}
+  m_Enabled: 0
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_UsedByComposite: 0
+  m_Offset: {x: 0, y: 0}
+  m_SpriteTilingProperty:
+    border: {x: 0, y: 0, z: 0, w: 0}
+    pivot: {x: 0.5, y: 0.5}
+    oldSize: {x: 1, y: 1}
+    newSize: {x: 1, y: 1}
+    adaptiveTilingThreshold: 0.5
+    drawMode: 0
+    adaptiveTiling: 0
+  m_AutoTiling: 0
+  serializedVersion: 2
+  m_Size: {x: 1, y: 1}
+  m_EdgeRadius: 0

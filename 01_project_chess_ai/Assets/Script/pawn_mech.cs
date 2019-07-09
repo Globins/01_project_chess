@@ -14,29 +14,29 @@ public class pawn_mech : MonoBehaviour
 	private bool selected = false;
 	private bool firstMove = true;
 	private bool alive = true;
+	private bool refreshOnStart = true;
 
     // Start is called before the first frame update
     void Start()
     {
         thisPiece = GetComponent<SpriteRenderer>();
         priorPos = new Vector2(transform.position.x, transform.position.y);
-        GameManager.pieceLocation.Add(priorPos,alive);
     }
 
     // Update is called once per frame
     void Update()
     {
     	if(!GameManager.instance.playersTurn) return;
-
     	if(Input.GetMouseButtonDown(0))
         	onClick();
         if(selected)
         	moveWithMouse();
-        Debug.Log(alive);
-        if(!alive)
+        else if(refreshOnStart)
         {
-        	GameManager.pieceLocation.Remove(new Vector2(transform.position.x, transform.position.y));
-        	Destroy(this);
+        	GameManager.instance.reset_piece = true;
+			transform.position = priorPos;
+        	land_piece_set();
+        	refreshOnStart = false;
         }
     }
     
@@ -51,13 +51,15 @@ public class pawn_mech : MonoBehaviour
 		//if the object wasnt selected, it becomes selected and follows mouse
 		if(select && select.transform.gameObject.tag == "Piece" &&
 			Mathf.Abs(deltay) == 0 && Mathf.Abs(deltax) == 0 && 
-			!GameManager.instance.hasPieceInHand && GameManager.instance.pickDelay == 0)
+			!GameManager.instance.hasPieceInHand)
 		{
 			pickUpPiece();
 		}
 
 		else if(selected)
 		{
+			Debug.Log(gridPos.x + " " + gridPos.y);
+			//error in correct bounds
 			if(((gridPos.y < 0 && gridPos.y > 7) && (gridPos.x < 0 && gridPos.x > 7)) ||
 				(GameManager.instance.playersTurn && deltay < 0) || 
 				(!GameManager.instance.playersTurn && deltay > 0) ||
@@ -67,13 +69,17 @@ public class pawn_mech : MonoBehaviour
 				GameManager.instance.reset_piece = true;
 				transform.position = priorPos;
 			}
-			else if(Mathf.Abs(deltax) == 1 && Mathf.Abs(deltay) == 1 && GameManager.occupiedSpots[new Vector2(gridPos.x, gridPos.y)])
+			else if(Mathf.Abs(deltax) == 1 && Mathf.Abs(deltay) == 1 &&
+				GameManager.occupiedSpots[new Vector2(priorPos.x+1, priorPos.y+1)])
 			{
+				Debug.Log("Meep");
 				capture(gridPos); //removes the object there and makes tile unoccupied
 				move_piece(deltax,deltay,gridPos);
 			}
-			else if(new List<float>{1, 2}.Contains(Mathf.Abs(deltay)) && !GameManager.occupiedSpots[new Vector2(gridPos.x, gridPos.y)])
+			else if(new List<float>{1, 2}.Contains(Mathf.Abs(deltay)) &&
+				(!GameManager.occupiedSpots[new Vector2(gridPos.x, gridPos.y)] && deltax == 0))
 			{
+				Debug.Log("Meep2");
 				move_piece(deltax,deltay,gridPos); //places object there
 			}
 			else
@@ -96,6 +102,7 @@ public class pawn_mech : MonoBehaviour
     	if(firstMove)
     		firstMove = false;
     	GameManager.pieceLocation[new Vector2(remove_object_here.x, remove_object_here.y)] = false;
+    	GameManager.pieceLocation.Remove(new Vector2(remove_object_here.x, remove_object_here.y));
     	GameManager.occupiedSpots[new Vector2(remove_object_here.x, remove_object_here.y)] = false;
     }
 
@@ -112,12 +119,13 @@ public class pawn_mech : MonoBehaviour
 	    	}
 			Debug.Log("Move");
 			transform.position = move_here;
+	    	GameManager.pieceLocation[new Vector2(priorPos.x, priorPos.y)] = false;
+			GameManager.occupiedSpots[new Vector2(priorPos.x, priorPos.y)] = false;
 			priorPos = new Vector2(transform.position.x, transform.position.y);
+			land_piece_set();
 	    	if(firstMove)
 				firstMove = false;
-			land_piece_set();
 	    }
-
     }
 
     //picks up the piece if it wasnt selected
@@ -141,6 +149,8 @@ public class pawn_mech : MonoBehaviour
     //places the piece down
     private void land_piece_set()
     {
+    	GameManager.occupiedSpots[new Vector2(transform.position.x, transform.position.y)] = true;
+    	GameManager.pieceLocation[new Vector2(transform.position.x, transform.position.y)] = true;
 		gameObject.layer = 9;
 		thisPiece.sortingLayerName = "Piece";
 		GameManager.instance.hasPieceInHand = false;

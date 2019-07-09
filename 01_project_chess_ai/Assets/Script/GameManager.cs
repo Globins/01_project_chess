@@ -8,7 +8,6 @@ public class GameManager : MonoBehaviour
     private BoardManager boardScript;
     public static Dictionary<Vector2, bool> occupiedSpots = new Dictionary<Vector2, bool>();
     public static Dictionary<Vector2, bool> pieceLocation = new Dictionary<Vector2, bool>();
-    public int pickDelay = 0;
     public bool hasPieceInHand = false;
     public bool playersTurn = true;
     public bool reset_piece = false;
@@ -29,10 +28,7 @@ public class GameManager : MonoBehaviour
     }
     void update()
     {
-        if(pickDelay > 0)
-            pickDelay--;
-        if(reset_piece)
-            reset_piece = false;
+        reset_piece = false;
     }
 
     public Vector2 mouseToGrid(float x, float y, Vector2 current)
