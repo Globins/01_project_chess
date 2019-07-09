@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &6871857142399221795
+--- !u!1 &5372536441174096745
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,9 +8,9 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 6871857142399221796}
-  - component: {fileID: 6871857142399221797}
-  - component: {fileID: 6871857142399221794}
+  - component: {fileID: 5372536441174096750}
+  - component: {fileID: 5372536441174096751}
+  - component: {fileID: 5372536441174096744}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -18,13 +18,13 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &6871857142399221796
+--- !u!4 &5372536441174096750
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6871857142399221795}
+  m_GameObject: {fileID: 5372536441174096745}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -0.407, y: 0.18400002, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
@@ -32,13 +32,13 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &6871857142399221797
+--- !u!114 &5372536441174096751
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6871857142399221795}
+  m_GameObject: {fileID: 5372536441174096745}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 077d294f1ca9d844995612eb6a1f5105, type: 3}
@@ -60,7 +60,7 @@ MonoBehaviour:
   - {fileID: 1443058115099166195, guid: 01b8f5fe22530884082da63b98571220, type: 3}
   - {fileID: 1409529411777936194, guid: a092efcd4d696834f93cf6cacc7fa37e, type: 3}
   - {fileID: 8721871121072663827, guid: 3b62ec3495be41c40b90a7c1675b43ac, type: 3}
-  - {fileID: 1671703059545696474, guid: e1671e31b196b0f4cb50713bd1c36d50, type: 3}
+  - {fileID: 5178447705716198535, guid: 72309b334d89a064c958aeb772c253df, type: 3}
   - {fileID: 6625414190334769539, guid: 9675ee60c68d86846a021d722477ef5a, type: 3}
   - {fileID: 8346405035060576358, guid: d784e494411c3c54a845e4a551cf2c7e, type: 3}
   - {fileID: 4022868710510441294, guid: 17182a5f9a8e0ba4fb06153fc72bf11f, type: 3}
@@ -71,18 +71,15 @@ MonoBehaviour:
   - {fileID: 9056805181397190907, guid: 783df299b6dc665458dba55f463fd820, type: 3}
   columns: 8
   rows: 8
---- !u!114 &6871857142399221794
+--- !u!114 &5372536441174096744
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6871857142399221795}
+  m_GameObject: {fileID: 5372536441174096745}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 97b59e4f77ea7a646b7b1f3df87a4bf0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  hasPieceInHand: 0
-  playersTurn: 1
-  reset_piece: 0

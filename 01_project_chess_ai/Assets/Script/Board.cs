@@ -53,7 +53,7 @@ public class Board : MonoBehaviour
         	}
         }
 
-		if(GameManager.occupiedSpots[new Vector2(currentPos.x, currentPos.y)])
+/*		if(GameManager.occupiedSpots[new Vector2(currentPos.x, currentPos.y)])
     	{
     		thisPiece.sprite = test;
     	}
@@ -64,6 +64,6 @@ public class Board : MonoBehaviour
     	else
     	{
     		thisPiece.sprite = defaultspr;
-    	}
+    	}*/
     }
 }

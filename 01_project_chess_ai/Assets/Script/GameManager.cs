@@ -7,9 +7,8 @@ public class GameManager : MonoBehaviour
     public static GameManager instance = null;
     private BoardManager boardScript;
     public static Dictionary<Vector2, bool> occupiedSpots = new Dictionary<Vector2, bool>();
-    public static Dictionary<Vector2, bool> pieceLocation = new Dictionary<Vector2, bool>();
+    public static Dictionary<Vector2, Piece> pieceLocation = new Dictionary<Vector2, Piece>();
     public bool hasPieceInHand = false;
-    public static int pickDelay = 0;
     public bool playersTurn = true;
     public bool reset_piece = false;
     
@@ -29,10 +28,6 @@ public class GameManager : MonoBehaviour
     }
     void update()
     {
-        if(pickDelay > 0)
-        {
-            pickDelay--;
-        }
         reset_piece = false;
     }
 
