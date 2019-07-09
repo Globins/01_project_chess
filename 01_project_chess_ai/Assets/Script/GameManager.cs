@@ -6,9 +6,10 @@ public class GameManager : MonoBehaviour
 {
     public static GameManager instance = null;
     private BoardManager boardScript;
-    private int level = 3;
+    public int pickDelay = 0;
     public bool hasPieceInHand = false;
     public bool playersTurn = true;
+    public bool reset_piece = false;
     
     void Awake()
     {
@@ -22,6 +23,19 @@ public class GameManager : MonoBehaviour
     }
     void InitGame()
     {
-        boardScript.SetupScene(level);
+        boardScript.SetupScene();
+    }
+    void update()
+    {
+        if(pickDelay > 0)
+            pickDelay--;
+    }
+    
+    public Vector2 mouseToGrid(float x, float y, Vector2 current)
+    {
+        Vector3 first = new Vector3(Mathf.Round(x), Mathf.Round(y), 10f);
+        Vector3 gridPos = Camera.main.ScreenToWorldPoint(first);
+        gridPos = new Vector3(Mathf.Round(gridPos.x),Mathf.Round(gridPos.y),0);
+        return gridPos;
     }
 }

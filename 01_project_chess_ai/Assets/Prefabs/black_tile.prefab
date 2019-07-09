@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1847384029197023886}
   - component: {fileID: 5764553723147886032}
+  - component: {fileID: -9019603702836763142}
   m_Layer: 10
   m_Name: black_tile
   m_TagString: Board
@@ -79,3 +80,15 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!114 &-9019603702836763142
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 16574956938915211}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d64cd4ee29aca6c4ab7f56bd781536d9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
