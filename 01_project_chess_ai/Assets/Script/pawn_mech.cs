@@ -6,28 +6,29 @@ using UnityEngine;
 
 //Add function where it can turn into any lost pieces when it edges the edge
 
-public class pawn_mech : Piece
+public class pawn_mech : MonoBehaviour
 {
 	private SpriteRenderer thisPiece;
 	private Vector2 priorPos;
 	private Vector2 gridPos;
 	private bool selected = false;
 	private bool firstMove = true;
-	private bool refreshOnStart = true;
 	private bool alive = true;
+	private bool refreshOnStart = true;
 
     // Start is called before the first frame update
     void Start()
     {
         thisPiece = GetComponent<SpriteRenderer>();
         priorPos = new Vector2(transform.position.x, transform.position.y);
-        GameManager.pieceLocation.Add(priorPos,this);
     }
+
     // Update is called once per frame
     void Update()
     {
         if(!alive)
         {
+        	Debug.Log("IM DED");
         	DestroyImmediate(this.gameObject);
         }
     	if(!GameManager.instance.playersTurn) return;
@@ -35,7 +36,7 @@ public class pawn_mech : Piece
         	onClick();
         if(selected)
         	moveWithMouse();
-        if(refreshOnStart)
+        else if(refreshOnStart)
         {
         	GameManager.instance.reset_piece = true;
 			transform.position = priorPos;
@@ -55,40 +56,47 @@ public class pawn_mech : Piece
 		//if the object wasnt selected, it becomes selected and follows mouse
 		if(select && select.transform.gameObject.tag == "Piece" &&
 			Mathf.Abs(deltay) == 0 && Mathf.Abs(deltax) == 0 && 
-			!GameManager.instance.hasPieceInHand)
+			!GameManager.instance.hasPieceInHand && GameManager.pickDelay == 0)
 		{
 			pickUpPiece();
 		}
 
 		else if(selected)
 		{
+			Debug.Log(gridPos.x + " " + gridPos.y);
 			//error in correct bounds
 			if(((gridPos.y < 0 && gridPos.y > 7) && (gridPos.x < 0 && gridPos.x > 7)) ||
 				(GameManager.instance.playersTurn && deltay < 0) || 
 				(!GameManager.instance.playersTurn && deltay > 0) ||
 				(!firstMove && Mathf.Abs(deltay) == 2))
 			{
+				Debug.Log("reset1");
 				GameManager.instance.reset_piece = true;
 				transform.position = priorPos;
 			}
 			else if(Mathf.Abs(deltax) == 1 && Mathf.Abs(deltay) == 1 &&
-				GameManager.occupiedSpots[new Vector2(priorPos.x+1, priorPos.y+1)])
+				GameManager.occupiedSpots[new Vector2(priorPos.x+deltax, priorPos.y+deltay)])
 			{
+				Debug.Log("Meep");
 				capture(gridPos); //removes the object there and makes tile unoccupied
 				move_piece(deltax,deltay,gridPos);
 			}
 			else if(new List<float>{1, 2}.Contains(Mathf.Abs(deltay)) &&
 				(!GameManager.occupiedSpots[new Vector2(gridPos.x, gridPos.y)] && deltax == 0))
 			{
+				Debug.Log("Meep2");
 				move_piece(deltax,deltay,gridPos); //places object there
 			}
 			else
 			{
+				Debug.Log("reset2");
 				GameManager.instance.reset_piece = true;
 				transform.position = priorPos;
 			}
+			//GameManager.pickDelay = 60;
 			land_piece_set();
 			//((temp.y >= 0 && temp.y <= 7) && (temp.x >= 0 && temp.x <= 7)) board bounds
+			//(GameManager.instance.playersTurn && deltaPos.y < 0) || (!GameManager.instance.playersTurn && deltaPos.y > 0) 
 		}
     }
 
@@ -96,10 +104,11 @@ public class pawn_mech : Piece
     private void capture(Vector2 remove_object_here)
     {
     	//get object thats there, delete it
+    	Debug.Log("Attack");
     	if(firstMove)
     		firstMove = false;
-    	GameManager.pieceLocation[remove_object_here].kill();
-    	GameManager.pieceLocation.Remove(remove_object_here);
+    	GameManager.pieceLocation[new Vector2(remove_object_here.x, remove_object_here.y)] = false;
+    	GameManager.pieceLocation.Remove(new Vector2(remove_object_here.x, remove_object_here.y));
     	GameManager.occupiedSpots[new Vector2(remove_object_here.x, remove_object_here.y)] = false;
     }
 
@@ -114,11 +123,11 @@ public class pawn_mech : Piece
     			Vector2 remove_this = new Vector2(move_here.x, move_here.y-1);
     			capture(remove_this);
 	    	}
+			Debug.Log("Move");
 			transform.position = move_here;
-	    	GameManager.pieceLocation.Remove(priorPos);
+	    	GameManager.pieceLocation[new Vector2(priorPos.x, priorPos.y)] = false;
 			GameManager.occupiedSpots[new Vector2(priorPos.x, priorPos.y)] = false;
 			priorPos = new Vector2(transform.position.x, transform.position.y);
-			GameManager.pieceLocation.Add(priorPos,this);
 			land_piece_set();
 	    	if(firstMove)
 				firstMove = false;
@@ -128,6 +137,7 @@ public class pawn_mech : Piece
     //picks up the piece if it wasnt selected
     private void pickUpPiece()
     {
+		Debug.Log("Picked.");
 		priorPos = transform.position;
 		selected = true;
 		gameObject.layer = 8;
@@ -146,15 +156,10 @@ public class pawn_mech : Piece
     private void land_piece_set()
     {
     	GameManager.occupiedSpots[new Vector2(transform.position.x, transform.position.y)] = true;
+    	GameManager.pieceLocation[new Vector2(transform.position.x, transform.position.y)] = true;
 		gameObject.layer = 9;
 		thisPiece.sortingLayerName = "Piece";
 		GameManager.instance.hasPieceInHand = false;
 		selected = false;
-    }
-
-    //kills the object.
-    public override void kill()
-    {
-        alive = false;
     }
 }
