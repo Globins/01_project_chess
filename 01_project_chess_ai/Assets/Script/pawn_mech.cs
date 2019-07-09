@@ -26,11 +26,9 @@ public class pawn_mech : Piece
     // Update is called once per frame
     void Update()
     {
-    	//Debug.Log(GameManager.pieceLocation.Count);
         if(!alive)
         {
-        	Debug.Log("IM DED");
-        	DestroyImmediate(this);
+        	DestroyImmediate(this.gameObject);
         }
     	if(!GameManager.instance.playersTurn) return;
     	if(Input.GetMouseButtonDown(0))
@@ -70,26 +68,22 @@ public class pawn_mech : Piece
 				(!GameManager.instance.playersTurn && deltay > 0) ||
 				(!firstMove && Mathf.Abs(deltay) == 2))
 			{
-				Debug.Log("reset");
 				GameManager.instance.reset_piece = true;
 				transform.position = priorPos;
 			}
 			else if(Mathf.Abs(deltax) == 1 && Mathf.Abs(deltay) == 1 &&
 				GameManager.occupiedSpots[new Vector2(priorPos.x+1, priorPos.y+1)])
 			{
-				Debug.Log("Meep");
 				capture(gridPos); //removes the object there and makes tile unoccupied
 				move_piece(deltax,deltay,gridPos);
 			}
 			else if(new List<float>{1, 2}.Contains(Mathf.Abs(deltay)) &&
 				(!GameManager.occupiedSpots[new Vector2(gridPos.x, gridPos.y)] && deltax == 0))
 			{
-				Debug.Log("Meep2");
 				move_piece(deltax,deltay,gridPos); //places object there
 			}
 			else
 			{
-				Debug.Log("reset");
 				GameManager.instance.reset_piece = true;
 				transform.position = priorPos;
 			}
@@ -102,7 +96,6 @@ public class pawn_mech : Piece
     private void capture(Vector2 remove_object_here)
     {
     	//get object thats there, delete it
-    	Debug.Log("Attack");
     	if(firstMove)
     		firstMove = false;
     	GameManager.pieceLocation[remove_object_here].kill();
@@ -121,7 +114,6 @@ public class pawn_mech : Piece
     			Vector2 remove_this = new Vector2(move_here.x, move_here.y-1);
     			capture(remove_this);
 	    	}
-			Debug.Log("Move");
 			transform.position = move_here;
 	    	GameManager.pieceLocation.Remove(priorPos);
 			GameManager.occupiedSpots[new Vector2(priorPos.x, priorPos.y)] = false;
@@ -136,7 +128,6 @@ public class pawn_mech : Piece
     //picks up the piece if it wasnt selected
     private void pickUpPiece()
     {
-		Debug.Log("Picked.");
 		priorPos = transform.position;
 		selected = true;
 		gameObject.layer = 8;
@@ -160,7 +151,7 @@ public class pawn_mech : Piece
 		GameManager.instance.hasPieceInHand = false;
 		selected = false;
     }
-    
+
     //kills the object.
     public override void kill()
     {
