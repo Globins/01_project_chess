@@ -131,7 +131,7 @@ public class BoardManager : MonoBehaviour
     {
         //Creates the outer walls and floor.
         BoardSetup ();
-        //PieceSetup ();
+        PieceSetup ();
         InitialiseList ();
     }
 }
