@@ -15,7 +15,10 @@ public class rook_mech : Piece
 	private bool refreshOnStart = true;
 	private bool alive = true;
 	private bool is_player = false;
-	private float boundary = 0;
+	private float yneg = 0;
+    private float xpos = 0;
+    private float xneg = 0;
+    private float ypos = 0;
 
     // Start is called before the first frame update
     void Start()
@@ -58,7 +61,8 @@ public class rook_mech : Piece
         float deltax = gridPos.x-priorPos.x;
         float deltay = gridPos.y-priorPos.y;
         //create boundary for the delta so it cant move past an object
-
+        create_bounds();
+        Debug.Log(xpos + " " + ypos + " " + xneg + " " + yneg);
 		//if the object wasnt selected, it becomes selected and follows mouse
 		if(select && select.transform.gameObject.tag == "Piece" &&
 			Mathf.Abs(deltay) == 0 && Mathf.Abs(deltax) == 0 && 
@@ -78,7 +82,8 @@ public class rook_mech : Piece
 				GameManager.instance.reset_piece = true;
 				transform.position = priorPos;
 			}
-			else if(Mathf.Abs(deltax) == 0 || Mathf.Abs(deltay) == 0)
+			else if((Mathf.Abs(deltax) == 0 || Mathf.Abs(deltay) == 0) &&
+                    ((deltax <= xpos && deltax >= xneg) && (deltay <= ypos && deltay >= yneg)))
 			{
 				Debug.Log("M");
 				move_piece(deltax,deltay,gridPos); //places object there
@@ -90,6 +95,7 @@ public class rook_mech : Piece
 				GameManager.instance.reset_piece = true;
 				transform.position = priorPos;
 			}
+            xpos = xneg = ypos = yneg = 0;
 			land_piece_set();
 		}
     }
@@ -155,6 +161,70 @@ public class rook_mech : Piece
 		thisPiece.sortingLayerName = "Piece";
 		GameManager.instance.hasPieceInHand = false;
 		selected = false;
+    }
+    private void create_bounds()
+    {
+/*        for(float i = priorPos.y+1; i < 8; i++)
+        {
+            if(!GameManager.occupiedSpots[new Vector2(priorPos.x, i)])
+            {
+                ypos++;
+            }
+            else
+            {
+                if(GameManager.pieceLocation[new Vector2(priorPos.x, i)].player_check() != is_player)
+                {
+                    ypos++;
+                    break;
+                }
+            }
+        }
+        for(float i = priorPos.x+1; i < 8; i++)
+        {
+            if(!GameManager.occupiedSpots[new Vector2(i, priorPos.y)])
+            {
+                xpos++;
+            }
+            else
+            {
+                if(GameManager.pieceLocation[new Vector2(i, priorPos.y)].player_check()!= is_player)
+                {
+                    xpos++;
+                    break;
+                }
+            }
+        }*/
+/*        for(float i = priorPos.y; i > -1; i--)
+        {
+            if(GameManager.occupiedSpots[new Vector2(priorPos.x, i)])
+            {
+                yneg--;
+            }
+            else
+            {
+                if(GameManager.pieceLocation[new Vector2(priorPos.x, i)].player_check() != is_player)
+                {
+                    yneg--;
+                    break;
+                }
+
+            }
+        }
+        for(float i = priorPos.y; i > -1; i--)
+        {
+            if(!GameManager.occupiedSpots[new Vector2(i, priorPos.y)])
+            {
+                xneg--;
+            }
+            else
+            {
+                if(GameManager.pieceLocation[new Vector2(i, priorPos.y)].player_check() != is_player)
+                {
+                    xneg--;
+                    break;
+                }
+            }
+        }*/
     }
 
     //kills the object.
