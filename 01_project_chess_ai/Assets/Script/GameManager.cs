@@ -7,7 +7,7 @@ public class GameManager : MonoBehaviour
     public static GameManager instance = null;
     private BoardManager boardScript;
     public static Dictionary<Vector2, bool> occupiedSpots = new Dictionary<Vector2, bool>();
-    public static Dictionary<Vector2, bool> pieceLocation = new Dictionary<Vector2, bool>();
+    public static Dictionary<Vector2, Piece> pieceLocation = new Dictionary<Vector2, Piece>();
     public bool hasPieceInHand = false;
     public bool playersTurn = true;
     public bool reset_piece = false;

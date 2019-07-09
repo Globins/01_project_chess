@@ -6,32 +6,38 @@ using UnityEngine;
 
 //Add function where it can turn into any lost pieces when it edges the edge
 
-public class pawn_mech : MonoBehaviour
+public class pawn_mech : Piece
 {
 	private SpriteRenderer thisPiece;
 	private Vector2 priorPos;
 	private Vector2 gridPos;
 	private bool selected = false;
 	private bool firstMove = true;
-	private bool alive = true;
 	private bool refreshOnStart = true;
+	private bool alive = true;
 
     // Start is called before the first frame update
     void Start()
     {
         thisPiece = GetComponent<SpriteRenderer>();
         priorPos = new Vector2(transform.position.x, transform.position.y);
+        GameManager.pieceLocation.Add(priorPos,this);
     }
-
     // Update is called once per frame
     void Update()
     {
+    	//Debug.Log(GameManager.pieceLocation.Count);
+        if(!alive)
+        {
+        	Debug.Log("IM DED");
+        	DestroyImmediate(this);
+        }
     	if(!GameManager.instance.playersTurn) return;
     	if(Input.GetMouseButtonDown(0))
         	onClick();
         if(selected)
         	moveWithMouse();
-        else if(refreshOnStart)
+        if(refreshOnStart)
         {
         	GameManager.instance.reset_piece = true;
 			transform.position = priorPos;
@@ -58,7 +64,6 @@ public class pawn_mech : MonoBehaviour
 
 		else if(selected)
 		{
-			Debug.Log(gridPos.x + " " + gridPos.y);
 			//error in correct bounds
 			if(((gridPos.y < 0 && gridPos.y > 7) && (gridPos.x < 0 && gridPos.x > 7)) ||
 				(GameManager.instance.playersTurn && deltay < 0) || 
@@ -90,7 +95,6 @@ public class pawn_mech : MonoBehaviour
 			}
 			land_piece_set();
 			//((temp.y >= 0 && temp.y <= 7) && (temp.x >= 0 && temp.x <= 7)) board bounds
-			//(GameManager.instance.playersTurn && deltaPos.y < 0) || (!GameManager.instance.playersTurn && deltaPos.y > 0) 
 		}
     }
 
@@ -101,8 +105,8 @@ public class pawn_mech : MonoBehaviour
     	Debug.Log("Attack");
     	if(firstMove)
     		firstMove = false;
-    	GameManager.pieceLocation[new Vector2(remove_object_here.x, remove_object_here.y)] = false;
-    	GameManager.pieceLocation.Remove(new Vector2(remove_object_here.x, remove_object_here.y));
+    	GameManager.pieceLocation[remove_object_here].kill();
+    	GameManager.pieceLocation.Remove(remove_object_here);
     	GameManager.occupiedSpots[new Vector2(remove_object_here.x, remove_object_here.y)] = false;
     }
 
@@ -119,9 +123,10 @@ public class pawn_mech : MonoBehaviour
 	    	}
 			Debug.Log("Move");
 			transform.position = move_here;
-	    	GameManager.pieceLocation[new Vector2(priorPos.x, priorPos.y)] = false;
+	    	GameManager.pieceLocation.Remove(priorPos);
 			GameManager.occupiedSpots[new Vector2(priorPos.x, priorPos.y)] = false;
 			priorPos = new Vector2(transform.position.x, transform.position.y);
+			GameManager.pieceLocation.Add(priorPos,this);
 			land_piece_set();
 	    	if(firstMove)
 				firstMove = false;
@@ -150,10 +155,15 @@ public class pawn_mech : MonoBehaviour
     private void land_piece_set()
     {
     	GameManager.occupiedSpots[new Vector2(transform.position.x, transform.position.y)] = true;
-    	GameManager.pieceLocation[new Vector2(transform.position.x, transform.position.y)] = true;
 		gameObject.layer = 9;
 		thisPiece.sortingLayerName = "Piece";
 		GameManager.instance.hasPieceInHand = false;
 		selected = false;
+    }
+    
+    //kills the object.
+    public override void kill()
+    {
+        alive = false;
     }
 }
