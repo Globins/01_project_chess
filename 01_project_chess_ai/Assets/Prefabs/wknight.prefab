@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 3440307549716844695}
   - component: {fileID: 8857957838513871171}
   - component: {fileID: 1342968655048433175}
+  - component: {fileID: -5857444291341390299}
   m_Layer: 9
   m_Name: wknight
   m_TagString: Piece
@@ -128,3 +129,15 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 4
+--- !u!114 &-5857444291341390299
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 71684918811467431}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2ca645e8b67c9324abde8e34f6b8c38f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

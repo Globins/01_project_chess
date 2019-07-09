@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 341938780248001226}
   - component: {fileID: 5903492636578857758}
   - component: {fileID: 4153317347174515786}
+  - component: {fileID: -6210515774001653498}
   m_Layer: 9
   m_Name: wking
   m_TagString: Piece
@@ -128,3 +129,15 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 4
+--- !u!114 &-6210515774001653498
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3169988722605802746}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 50369e5e41c53584b81dc3573b279d76, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

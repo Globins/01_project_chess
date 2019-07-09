@@ -55,7 +55,8 @@ public class pawn_mech : Piece
 		//if the object wasnt selected, it becomes selected and follows mouse
 		if(select && select.transform.gameObject.tag == "Piece" &&
 			Mathf.Abs(deltay) == 0 && Mathf.Abs(deltax) == 0 && 
-			!GameManager.instance.hasPieceInHand)
+			!GameManager.instance.hasPieceInHand &&
+			GameManager.pieceLocation.ContainsKey(priorPos))
 		{
 			Debug.Log("P");
 			pickUpPiece();
