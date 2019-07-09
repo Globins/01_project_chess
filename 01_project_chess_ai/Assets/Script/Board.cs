@@ -43,17 +43,9 @@ public class Board : MonoBehaviour
         {
         	if(clicked) //To reset when the player presses on a different tile
         		clicked = false;
-        	if(deltax == 0 && deltay == 0)
-        	{
-        		if(GameManager.occupiedSpots[new Vector2(currentPos.x, currentPos.y)])
-				{
-					GameManager.occupiedSpots[new Vector2(currentPos.x, currentPos.y)] = false;
-        			clicked = true;
-        		}
-        	}
         }
 
-/*		if(GameManager.occupiedSpots[new Vector2(currentPos.x, currentPos.y)])
+		if(GameManager.occupiedSpots[new Vector2(currentPos.x, currentPos.y)])
     	{
     		thisPiece.sprite = test;
     	}
@@ -64,6 +56,6 @@ public class Board : MonoBehaviour
     	else
     	{
     		thisPiece.sprite = defaultspr;
-    	}*/
+    	}
     }
 }

@@ -57,38 +57,42 @@ public class pawn_mech : Piece
 			Mathf.Abs(deltay) == 0 && Mathf.Abs(deltax) == 0 && 
 			!GameManager.instance.hasPieceInHand)
 		{
+			Debug.Log("P");
 			pickUpPiece();
 		}
 
 		else if(selected)
 		{
-			//error in correct bounds
-			if(((gridPos.y < 0 && gridPos.y > 7) && (gridPos.x < 0 && gridPos.x > 7)) ||
-				(GameManager.instance.playersTurn && deltay < 0) || 
-				(!GameManager.instance.playersTurn && deltay > 0) ||
+			//Error
+			if(((transform.position.y < 0 || transform.position.y > 7) && (transform.position.x < 0 || transform.position.x > 7)) ||
+				(GameManager.instance.playersTurn && deltay < 0) || (!GameManager.instance.playersTurn && deltay > 0) ||
 				(!firstMove && Mathf.Abs(deltay) == 2))
 			{
+				Debug.Log("R1");
 				GameManager.instance.reset_piece = true;
 				transform.position = priorPos;
 			}
 			else if(Mathf.Abs(deltax) == 1 && Mathf.Abs(deltay) == 1 &&
-				GameManager.occupiedSpots[new Vector2(priorPos.x+1, priorPos.y+1)])
+				GameManager.occupiedSpots[new Vector2(priorPos.x+deltax, priorPos.y+deltay)])
 			{
+				Debug.Log("A");
 				capture(gridPos); //removes the object there and makes tile unoccupied
 				move_piece(deltax,deltay,gridPos);
 			}
 			else if(new List<float>{1, 2}.Contains(Mathf.Abs(deltay)) &&
-				(!GameManager.occupiedSpots[new Vector2(gridPos.x, gridPos.y)] && deltax == 0))
+				(!GameManager.occupiedSpots[gridPos] && deltax == 0))
 			{
+				Debug.Log("M");
 				move_piece(deltax,deltay,gridPos); //places object there
 			}
+			//Default case
 			else
 			{
+				Debug.Log("R2");
 				GameManager.instance.reset_piece = true;
 				transform.position = priorPos;
 			}
 			land_piece_set();
-			//((temp.y >= 0 && temp.y <= 7) && (temp.x >= 0 && temp.x <= 7)) board bounds
 		}
     }
 
@@ -100,7 +104,7 @@ public class pawn_mech : Piece
     		firstMove = false;
     	GameManager.pieceLocation[remove_object_here].kill();
     	GameManager.pieceLocation.Remove(remove_object_here);
-    	GameManager.occupiedSpots[new Vector2(remove_object_here.x, remove_object_here.y)] = false;
+    	GameManager.occupiedSpots[remove_object_here] = false;
     }
 
     //deals with moving into an empty square, will only be called if outside parameters are correct
@@ -116,10 +120,9 @@ public class pawn_mech : Piece
 	    	}
 			transform.position = move_here;
 	    	GameManager.pieceLocation.Remove(priorPos);
-			GameManager.occupiedSpots[new Vector2(priorPos.x, priorPos.y)] = false;
+			GameManager.occupiedSpots[priorPos] = false;
 			priorPos = new Vector2(transform.position.x, transform.position.y);
 			GameManager.pieceLocation.Add(priorPos,this);
-			land_piece_set();
 	    	if(firstMove)
 				firstMove = false;
 	    }
