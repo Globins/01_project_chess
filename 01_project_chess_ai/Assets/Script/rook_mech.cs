@@ -61,8 +61,8 @@ public class rook_mech : Piece
         float deltax = gridPos.x-priorPos.x;
         float deltay = gridPos.y-priorPos.y;
         //create boundary for the delta so it cant move past an object
+        xneg = xpos = yneg = ypos = 0;
         create_bounds();
-        Debug.Log(xpos + " " + ypos + " " + xneg + " " + yneg);
 		//if the object wasnt selected, it becomes selected and follows mouse
 		if(select && select.transform.gameObject.tag == "Piece" &&
 			Mathf.Abs(deltay) == 0 && Mathf.Abs(deltax) == 0 && 
@@ -164,67 +164,59 @@ public class rook_mech : Piece
     }
     private void create_bounds()
     {
-/*        for(float i = priorPos.y+1; i < 8; i++)
-        {
-            if(!GameManager.occupiedSpots[new Vector2(priorPos.x, i)])
-            {
-                ypos++;
-            }
-            else
-            {
-                if(GameManager.pieceLocation[new Vector2(priorPos.x, i)].player_check() != is_player)
-                {
-                    ypos++;
-                    break;
-                }
-            }
-        }
-        for(float i = priorPos.x+1; i < 8; i++)
-        {
-            if(!GameManager.occupiedSpots[new Vector2(i, priorPos.y)])
-            {
-                xpos++;
-            }
-            else
-            {
-                if(GameManager.pieceLocation[new Vector2(i, priorPos.y)].player_check()!= is_player)
-                {
-                    xpos++;
-                    break;
-                }
-            }
-        }*/
-/*        for(float i = priorPos.y; i > -1; i--)
-        {
-            if(GameManager.occupiedSpots[new Vector2(priorPos.x, i)])
-            {
-                yneg--;
-            }
-            else
-            {
-                if(GameManager.pieceLocation[new Vector2(priorPos.x, i)].player_check() != is_player)
-                {
-                    yneg--;
-                    break;
-                }
+    	while(GameManager.occupiedSpots.ContainsKey(new Vector2(priorPos.x, priorPos.y+ypos+1)))
+    	{
+    		if(!GameManager.occupiedSpots[new Vector2(priorPos.x, priorPos.y+ypos+1)])
+    		{
+    			ypos++;
+    		}
+    		else
+    		{
+    			if(GameManager.pieceLocation[new Vector2(priorPos.x, priorPos.y+ypos+1)].player_check() != is_player)
+    				ypos++;
+    			break;
+    		}
+    	}
+    	while(GameManager.occupiedSpots.ContainsKey(new Vector2(priorPos.x+xpos+1, priorPos.y)))
+    	{
+    		if(!GameManager.occupiedSpots[new Vector2(priorPos.x+xpos+1, priorPos.y)])
+    		{
+    			xpos++;
+    		}
+    		else
+    		{
+    			if(GameManager.pieceLocation[new Vector2(priorPos.x+xpos+1, priorPos.y)].player_check() != is_player)
+    				xpos++;
+    			break;
+    		}
+    	}
 
-            }
-        }
-        for(float i = priorPos.y; i > -1; i--)
-        {
-            if(!GameManager.occupiedSpots[new Vector2(i, priorPos.y)])
-            {
-                xneg--;
-            }
-            else
-            {
-                if(GameManager.pieceLocation[new Vector2(i, priorPos.y)].player_check() != is_player)
-                {
-                    xneg--;
-                    break;
-                }
-            }
-        }*/
+    	while(GameManager.occupiedSpots.ContainsKey(new Vector2(priorPos.x, priorPos.y+yneg-1)))
+    	{
+    		if(!GameManager.occupiedSpots[new Vector2(priorPos.x, priorPos.y+yneg-1)])
+    		{
+    			yneg--;
+    		}
+    		else
+    		{
+    			if(GameManager.pieceLocation[new Vector2(priorPos.x, priorPos.y+yneg-1)].player_check() != is_player)
+    				yneg--;
+    			break;
+    		}
+    	}
+    	while(GameManager.occupiedSpots.ContainsKey(new Vector2(priorPos.x+xneg-1, priorPos.y)))
+    	{
+    		if(!GameManager.occupiedSpots[new Vector2(priorPos.x+xneg-1, priorPos.y)])
+    		{
+    			xneg--;
+    		}
+    		else
+    		{
+    			if(GameManager.pieceLocation[new Vector2(priorPos.x+xneg-1, priorPos.y)].player_check() != is_player)
+    				xneg--;
+    			break;
+    		}
+    	}
     }
 
     //kills the object.
