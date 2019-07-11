@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 7994967167040019781}
   - component: {fileID: 4296557753874437265}
   - component: {fileID: 6047938312298435525}
+  - component: {fileID: 1995718736709743013}
   m_Layer: 9
   m_Name: wqueen
   m_TagString: Piece
@@ -128,3 +129,15 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 4
+--- !u!114 &1995718736709743013
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4734149862388519797}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b69292d1aec4ea44b9a34506085a383a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

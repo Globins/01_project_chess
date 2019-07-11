@@ -12,7 +12,6 @@ public class rook_mech : Piece
 	private Vector2 priorPos;
 	private Vector2 gridPos;
 	private bool selected = false;
-	private bool refreshOnStart = true;
 	private bool alive = true;
 	private bool is_player = false;
 	private float yneg = 0;
@@ -27,29 +26,18 @@ public class rook_mech : Piece
         priorPos = new Vector2(transform.position.x, transform.position.y);
         GameManager.pieceLocation.Add(priorPos,this);
         if(priorPos.y == 0 || priorPos.y == 1)
-        {
         	is_player = true;
-        }
     }
     // Update is called once per frame
     void Update()
     {
         if(!alive)
-        {
         	DestroyImmediate(this.gameObject);
-        }
     	if(!GameManager.instance.playersTurn) return;
     	if(Input.GetMouseButtonDown(0))
         	onClick();
         if(selected)
-        	moveWithMouse();
-        if(refreshOnStart)
-        {
-        	GameManager.instance.reset_piece = true;
-			transform.position = priorPos;
-        	land_piece_set();
-        	refreshOnStart = false;
-        }
+        	transform.position = Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, 10f));
     }
     
     private void onClick()
@@ -57,7 +45,7 @@ public class rook_mech : Piece
     	//on click, it positions itself in the grid and ends turn
 		Vector2 mousePos = new Vector2(Input.mousePosition.x, Input.mousePosition.y);
 		RaycastHit2D select = Physics2D.Raycast(Camera.main.ScreenToWorldPoint(mousePos), Vector2.zero);
-		gridPos = GameManager.instance.mouseToGrid(Input.mousePosition.x, Input.mousePosition.y, priorPos);
+		gridPos = base.mouseToGrid(Input.mousePosition.x, Input.mousePosition.y);
         float deltax = gridPos.x-priorPos.x;
         float deltay = gridPos.y-priorPos.y;
         //create boundary for the delta so it cant move past an object
@@ -86,7 +74,7 @@ public class rook_mech : Piece
                     ((deltax <= xpos && deltax >= xneg) && (deltay <= ypos && deltay >= yneg)))
 			{
 				Debug.Log("M");
-				move_piece(deltax,deltay,gridPos); //places object there
+				transform.position = base.move_piece(deltax, deltay, gridPos, priorPos); //places object there
 			}
 			//Default case
 			else
@@ -100,42 +88,6 @@ public class rook_mech : Piece
 		}
     }
 
-    //deals with capturing
-    private void capture(Vector2 remove_object_here)
-    {
-    	//get object thats there, delete it
-    	GameManager.pieceLocation[remove_object_here].kill();
-    	GameManager.pieceLocation.Remove(remove_object_here);
-    	GameManager.occupiedSpots[remove_object_here] = false;
-    }
-
-    //deals with moving into an empty square, will only be called if outside parameters are correct
-    private void move_piece(float x, float y, Vector2 move_here)
-    {
-        bool refresh = false;
-        if(GameManager.occupiedSpots[move_here])
-        {
-            if(GameManager.pieceLocation[move_here].player_check())
-                refresh = true;
-            else
-                capture(move_here);
-        }
-        if(!refresh)
-        {
-            transform.position = move_here;
-            GameManager.pieceLocation.Remove(priorPos);
-            GameManager.occupiedSpots[priorPos] = false;
-            priorPos = new Vector2(transform.position.x, transform.position.y);
-            GameManager.pieceLocation.Add(priorPos,this);
-        }
-        else
-        {
-            Debug.Log("R2");
-            GameManager.instance.reset_piece = true;
-            transform.position = priorPos;
-        }
-    }
-
     //picks up the piece if it wasnt selected
     private void pickUpPiece()
     {
@@ -146,17 +98,11 @@ public class rook_mech : Piece
 		GameManager.instance.hasPieceInHand = true;
     }
 
-    private void moveWithMouse()
-    {
-    	Vector3 mousePos = new Vector3(Input.mousePosition.x, Input.mousePosition.y, 0f);
-    	mousePos.z += 10;
-    	transform.position = Camera.main.ScreenToWorldPoint(mousePos);
-    }
-
     //places the piece down
     private void land_piece_set()
     {
     	GameManager.occupiedSpots[new Vector2(transform.position.x, transform.position.y)] = true;
+        priorPos = new Vector2(transform.position.x, transform.position.y);
 		gameObject.layer = 9;
 		thisPiece.sortingLayerName = "Piece";
 		GameManager.instance.hasPieceInHand = false;

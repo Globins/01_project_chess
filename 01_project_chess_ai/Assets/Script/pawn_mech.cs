@@ -13,7 +13,6 @@ public class pawn_mech : Piece
 	private Vector2 gridPos;
 	private bool selected = false;
 	private bool firstMove = true;
-	private bool refreshOnStart = true;
 	private bool alive = true;
 	private bool is_player = false;
 
@@ -24,29 +23,18 @@ public class pawn_mech : Piece
         priorPos = new Vector2(transform.position.x, transform.position.y);
         GameManager.pieceLocation.Add(priorPos,this);
         if(priorPos.y == 0 || priorPos.y == 1)
-        {
         	is_player = true;
-        }
     }
     // Update is called once per frame
     void Update()
     {
         if(!alive)
-        {
         	DestroyImmediate(this.gameObject);
-        }
     	if(!GameManager.instance.playersTurn) return;
     	if(Input.GetMouseButtonDown(0))
         	onClick();
         if(selected)
-        	moveWithMouse();
-        if(refreshOnStart)
-        {
-        	GameManager.instance.reset_piece = true;
-			transform.position = priorPos;
-        	land_piece_set();
-        	refreshOnStart = false;
-        }
+        	transform.position = Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, 10f));
     }
     
     private void onClick()
@@ -54,7 +42,7 @@ public class pawn_mech : Piece
     	//on click, it positions itself in the grid and ends turn
 		Vector2 mousePos = new Vector2(Input.mousePosition.x, Input.mousePosition.y);
 		RaycastHit2D select = Physics2D.Raycast(Camera.main.ScreenToWorldPoint(mousePos), Vector2.zero);
-		gridPos = GameManager.instance.mouseToGrid(Input.mousePosition.x, Input.mousePosition.y, priorPos);
+		gridPos = base.mouseToGrid(Input.mousePosition.x, Input.mousePosition.y);
         float deltax = gridPos.x-priorPos.x;
         float deltay = gridPos.y-priorPos.y;
         bool refresh = false;
@@ -87,7 +75,9 @@ public class pawn_mech : Piece
 	    			refresh = true;
 	    		else
 	    		{
-					capture(gridPos);
+					base.capture(gridPos);
+			    	if(firstMove)
+    					firstMove = false;
 					move_piece(deltax,deltay,gridPos);
 	    		}
 			}
@@ -114,17 +104,6 @@ public class pawn_mech : Piece
 		}
     }
 
-    //deals with capturing
-    private void capture(Vector2 remove_object_here)
-    {
-    	//get object thats there, delete it
-    	if(firstMove)
-    		firstMove = false;
-    	GameManager.pieceLocation[remove_object_here].kill();
-    	GameManager.pieceLocation.Remove(remove_object_here);
-    	GameManager.occupiedSpots[remove_object_here] = false;
-    }
-
     //deals with moving into an empty square, will only be called if outside parameters are correct
     private void move_piece(float x, float y, Vector2 move_here)
     {
@@ -136,7 +115,7 @@ public class pawn_mech : Piece
 	    		if(!GameManager.pieceLocation[new Vector2(move_here.x, move_here.y-1)].player_check())
  				{
  					Vector2 remove_this = new Vector2(move_here.x, move_here.y-1);
-     				capture(remove_this);
+     				base.capture(remove_this);
      			}
 	    	}
 			transform.position = move_here;
@@ -157,13 +136,6 @@ public class pawn_mech : Piece
 		gameObject.layer = 8;
 		thisPiece.sortingLayerName = "Highlight";
 		GameManager.instance.hasPieceInHand = true;
-    }
-
-    private void moveWithMouse()
-    {
-    	Vector3 mousePos = new Vector3(Input.mousePosition.x, Input.mousePosition.y, 0f);
-    	mousePos.z += 10;
-    	transform.position = Camera.main.ScreenToWorldPoint(mousePos);
     }
 
     //places the piece down

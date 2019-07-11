@@ -30,12 +30,4 @@ public class GameManager : MonoBehaviour
     {
         reset_piece = false;
     }
-
-    public Vector2 mouseToGrid(float x, float y, Vector2 current)
-    {
-        Vector3 first = new Vector3(Mathf.Round(x), Mathf.Round(y), 10f);
-        Vector3 gridPos = Camera.main.ScreenToWorldPoint(first);
-        gridPos = new Vector3(Mathf.Round(gridPos.x),Mathf.Round(gridPos.y),0);
-        return gridPos;
-    }
 }

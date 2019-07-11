@@ -29,7 +29,9 @@ public class Board : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-    	gridPos = GameManager.instance.mouseToGrid(Input.mousePosition.x, Input.mousePosition.y, currentPos);
+        Vector3 first = new Vector3(Mathf.Round(Input.mousePosition.x), Mathf.Round(Input.mousePosition.y), 10f);
+        Vector3 gridPos = Camera.main.ScreenToWorldPoint(first);
+        gridPos = new Vector3(Mathf.Round(gridPos.x),Mathf.Round(gridPos.y),0);
         float deltax = gridPos.x-currentPos.x;
         float deltay = gridPos.y-currentPos.y;
 
