@@ -30,7 +30,7 @@ public class pawn_mech : Piece
     {
         if(!alive)
         	DestroyImmediate(this.gameObject);
-    	if(!GameManager.instance.playersTurn) return;
+    	if(!GameManager.instance.playersTurn && is_player) return;
     	if(Input.GetMouseButtonDown(0))
         	onClick();
         if(selected)
@@ -125,6 +125,7 @@ public class pawn_mech : Piece
 			GameManager.pieceLocation.Add(priorPos,this);
 	    	if(firstMove)
 				firstMove = false;
+			GameManager.instance.playersTurn = !GameManager.instance.playersTurn;
 	    }
     }
 

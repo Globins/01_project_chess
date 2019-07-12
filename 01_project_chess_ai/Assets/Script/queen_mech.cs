@@ -18,6 +18,12 @@ public class queen_mech : Piece
     private float xpos = 0;
     private float xneg = 0;
     private float ypos = 0;
+    private float topleft = 0;
+    private float topright = 0;
+    private float botleft = 0;
+    private float botright = 0;
+    private bool xdir;
+    private bool ydir;
 
     // Start is called before the first frame update
     void Start()
@@ -33,7 +39,7 @@ public class queen_mech : Piece
     {
         if(!alive)
         	DestroyImmediate(this.gameObject);
-    	if(!GameManager.instance.playersTurn) return;
+    	if(!GameManager.instance.playersTurn && is_player) return;
     	if(Input.GetMouseButtonDown(0))
         	onClick();
         if(selected)
@@ -48,9 +54,21 @@ public class queen_mech : Piece
 		gridPos = base.mouseToGrid(Input.mousePosition.x, Input.mousePosition.y);
         float deltax = gridPos.x-priorPos.x;
         float deltay = gridPos.y-priorPos.y;
+        xdir = ydir = true;
+        if(deltax < 0)
+            xdir = false;
+        if(deltay < 0)
+            ydir = false;
         //create boundary for the delta so it cant move past an object
-        xneg = xpos = yneg = ypos = 0;
-        create_bounds();
+        xneg = xpos = yneg = ypos = topleft = topright = botright = botleft = 0;
+        ypos = base.new_bound(0,1, true, true, priorPos);
+        xpos = base.new_bound(1,0, true, true, priorPos);
+        yneg = base.new_bound(0,1, false, false, priorPos);
+        xneg = base.new_bound(1,0, false, false, priorPos);
+        topleft = base.new_bound(1,1, false, true, priorPos);
+        topright = base.new_bound(1,1, true, true, priorPos);
+        botleft = base.new_bound(1,1, false, false, priorPos);
+        botright = base.new_bound(1,1, true, false, priorPos);
 		//if the object wasnt selected, it becomes selected and follows mouse
 		if(select && select.transform.gameObject.tag == "Piece" &&
 			Mathf.Abs(deltay) == 0 && Mathf.Abs(deltax) == 0 && 
@@ -64,14 +82,19 @@ public class queen_mech : Piece
 		else if(selected)
 		{
 			//Error
-			if((transform.position.y < 0 || transform.position.y > 7) && (transform.position.x < 0 || transform.position.x > 7))
+			if((transform.position.y < 0 || transform.position.y > 7) && (transform.position.x < 0 || transform.position.x > 7) || gridPos == priorPos)
 			{
 				Debug.Log("R1");
 				GameManager.instance.reset_piece = true;
 				transform.position = priorPos;
 			}
-			else if((Mathf.Abs(deltax) == 0 || Mathf.Abs(deltay) == 0) &&
-                    ((deltax <= xpos && deltax >= xneg) && (deltay <= ypos && deltay >= yneg)))
+			else if((Mathf.Abs(deltax) == Mathf.Abs(deltay)) &&
+                    ((xdir && ydir && Mathf.Abs(deltax) <= topright) ||
+                    (xdir && !ydir && Mathf.Abs(deltax) <= botright) ||
+                    (!xdir && ydir && Mathf.Abs(deltax) <= topleft) ||
+                    (!xdir && !ydir && Mathf.Abs(deltax) <= botleft))||
+                    ((Mathf.Abs(deltax) == 0 || Mathf.Abs(deltay) == 0) &&
+                    ((deltax <= xpos && deltax >= xneg*-1) && (deltay <= ypos && deltay >= yneg*-1))))
 			{
 				Debug.Log("M");
 				transform.position = base.move_piece(deltax, deltay, gridPos, priorPos); //places object there
@@ -83,7 +106,7 @@ public class queen_mech : Piece
 				GameManager.instance.reset_piece = true;
 				transform.position = priorPos;
 			}
-            xpos = xneg = ypos = yneg = 0;
+            xneg = xpos = yneg = ypos = topleft = topright = botright = botleft = 0;
 			land_piece_set();
 		}
     }
@@ -107,63 +130,6 @@ public class queen_mech : Piece
 		GameManager.instance.hasPieceInHand = false;
 		selected = false;
     }
-    private void create_bounds()
-    {
-    	while(GameManager.occupiedSpots.ContainsKey(new Vector2(priorPos.x, priorPos.y+ypos+1)))
-    	{
-    		if(!GameManager.occupiedSpots[new Vector2(priorPos.x, priorPos.y+ypos+1)])
-    		{
-    			ypos++;
-    		}
-    		else
-    		{
-    			if(GameManager.pieceLocation[new Vector2(priorPos.x, priorPos.y+ypos+1)].player_check() != is_player)
-    				ypos++;
-    			break;
-    		}
-    	}
-    	while(GameManager.occupiedSpots.ContainsKey(new Vector2(priorPos.x+xpos+1, priorPos.y)))
-    	{
-    		if(!GameManager.occupiedSpots[new Vector2(priorPos.x+xpos+1, priorPos.y)])
-    		{
-    			xpos++;
-    		}
-    		else
-    		{
-    			if(GameManager.pieceLocation[new Vector2(priorPos.x+xpos+1, priorPos.y)].player_check() != is_player)
-    				xpos++;
-    			break;
-    		}
-    	}
-
-    	while(GameManager.occupiedSpots.ContainsKey(new Vector2(priorPos.x, priorPos.y+yneg-1)))
-    	{
-    		if(!GameManager.occupiedSpots[new Vector2(priorPos.x, priorPos.y+yneg-1)])
-    		{
-    			yneg--;
-    		}
-    		else
-    		{
-    			if(GameManager.pieceLocation[new Vector2(priorPos.x, priorPos.y+yneg-1)].player_check() != is_player)
-    				yneg--;
-    			break;
-    		}
-    	}
-    	while(GameManager.occupiedSpots.ContainsKey(new Vector2(priorPos.x+xneg-1, priorPos.y)))
-    	{
-    		if(!GameManager.occupiedSpots[new Vector2(priorPos.x+xneg-1, priorPos.y)])
-    		{
-    			xneg--;
-    		}
-    		else
-    		{
-    			if(GameManager.pieceLocation[new Vector2(priorPos.x+xneg-1, priorPos.y)].player_check() != is_player)
-    				xneg--;
-    			break;
-    		}
-    	}
-    }
-
     //kills the object.
     public override void kill()
     {

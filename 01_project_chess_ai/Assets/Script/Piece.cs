@@ -51,6 +51,76 @@ public abstract class Piece : MonoBehaviour
 			Debug.Log("R2");
 			GameManager.instance.reset_piece = true;
 		}
+        GameManager.instance.playersTurn = !GameManager.instance.playersTurn;
 		return new_pos;
+    }
+    //Creates bounds for rook, queen and bishop
+    public virtual float new_bound(float xdir, float ydir, bool xchange, bool ychange, Vector2 old_pos)
+    {
+        float newb = 0;
+        float ysign = 1;
+        float xsign = 1;
+        if(ychange == false)
+            ysign = -1;
+        if(xchange == false)
+            xsign = -1;
+        while(GameManager.occupiedSpots.ContainsKey(new Vector2(old_pos.x+(xdir*xsign), old_pos.y+(ydir*ysign))))
+        {
+            if(!GameManager.occupiedSpots[new Vector2(old_pos.x+(xdir*xsign), old_pos.y+(ydir*ysign))])
+            {
+                if(xdir == ydir)
+                {
+                    xdir++;
+                    ydir++;
+                }
+                else if(xdir == 0)
+                    ydir++;
+                else
+                    xdir++;
+            }
+            else
+            {
+                if(GameManager.pieceLocation[new Vector2(old_pos.x+(xdir*xsign), old_pos.y+(ydir*ysign))].player_check() != 
+                	GameManager.pieceLocation[old_pos].player_check())
+                {
+                    if(xdir == ydir)
+                    {
+                        xdir++;
+                        ydir++;
+                    }
+                    else if(xdir == 0)
+                        ydir++;
+                    else
+                        xdir++;
+                }
+                break;
+            }
+        }
+        if(xdir == 0)
+            newb = ydir;
+        else
+            newb = xdir;
+        if((old_pos.x == 7 || old_pos.x == 0) && newb == 1)
+            newb = 0;
+        else if((old_pos.y == 7 || old_pos.y == 0) && newb == 1)
+            newb = 0;
+        else
+        {
+            if(ydir != 0 && ydir != xdir)
+            {
+                if(ychange)
+                    newb += ysign*-1;
+                else
+                    newb -= ysign*-1;
+            }
+            if(xdir != 0)
+            {
+                if(xchange)
+                    newb += xsign*-1;
+                else
+                    newb -= xsign*-1;
+            }
+        }
+        return newb;
     }
 }

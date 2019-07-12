@@ -2,10 +2,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-//Checklist:
-
-//Add function where it can turn into any lost pieces when it edges the edge
-
 public class bishop_mech : Piece
 {
 	private SpriteRenderer thisPiece;
@@ -37,7 +33,7 @@ public class bishop_mech : Piece
     {
         if(!alive)
         	DestroyImmediate(this.gameObject);
-    	if(!GameManager.instance.playersTurn) return;
+    	if(!GameManager.instance.playersTurn && is_player) return;
     	if(Input.GetMouseButtonDown(0))
         	onClick();
         if(selected)
@@ -59,8 +55,10 @@ public class bishop_mech : Piece
         	ydir = false;
         //create boundary for the delta so it cant move past an object
         topleft = topright = botright = botleft = 0;
-        create_bounds();
-        Debug.Log(topleft + " " + topright + " " + botright + " " + botleft);
+        topleft = base.new_bound(1,1, false, true, priorPos);
+        topright = base.new_bound(1,1, true, true, priorPos);
+        botleft = base.new_bound(1,1, false, false, priorPos);
+        botright = base.new_bound(1,1, true, false, priorPos);
 		//if the object wasnt selected, it becomes selected and follows mouse
 		if(select && select.transform.gameObject.tag == "Piece" &&
 			Mathf.Abs(deltay) == 0 && Mathf.Abs(deltax) == 0 && 
@@ -74,7 +72,7 @@ public class bishop_mech : Piece
 		else if(selected)
 		{
 			//Error
-			if((transform.position.y < 0 || transform.position.y > 7) && (transform.position.x < 0 || transform.position.x > 7))
+			if((transform.position.y < 0 || transform.position.y > 7) && (transform.position.x < 0 || transform.position.x > 7) || gridPos == priorPos)
 			{
 				Debug.Log("R1");
 				GameManager.instance.reset_piece = true;
@@ -120,62 +118,6 @@ public class bishop_mech : Piece
 		thisPiece.sortingLayerName = "Piece";
 		GameManager.instance.hasPieceInHand = false;
 		selected = false;
-    }
-    private void create_bounds()
-    {
-    	while(GameManager.occupiedSpots.ContainsKey(new Vector2(priorPos.x+topright+1, priorPos.y+topright+1)))
-    	{
-    		if(!GameManager.occupiedSpots[new Vector2(priorPos.x+topright+1, priorPos.y+topright+1)])
-    		{
-    			topright++;
-    		}
-    		else
-    		{
-    			if(GameManager.pieceLocation[new Vector2(priorPos.x+topright+1, priorPos.y+topright+1)].player_check() != is_player)
-    				topright++;
-    			break;
-    		}
-    	}
-    	while(GameManager.occupiedSpots.ContainsKey(new Vector2(priorPos.x-topleft-1, priorPos.y+topleft+1)))
-    	{
-    		if(!GameManager.occupiedSpots[new Vector2(priorPos.x-topleft-1, priorPos.y+topleft+1)])
-    		{
-    			topleft++;
-    		}
-    		else
-    		{
-    			if(GameManager.pieceLocation[new Vector2(priorPos.x-topleft-1, priorPos.y+topleft+1)].player_check() != is_player)
-    				topleft++;
-    			break;
-    		}
-    	}
-
-    	while(GameManager.occupiedSpots.ContainsKey(new Vector2(priorPos.x+botright+1, priorPos.y-botright-1)))
-    	{
-    		if(!GameManager.occupiedSpots[new Vector2(priorPos.x+botright+1, priorPos.y-botright-1)])
-    		{
-    			botright++;
-    		}
-    		else
-    		{
-    			if(GameManager.pieceLocation[new Vector2(priorPos.x+botright+1, priorPos.y-botright-1)].player_check() != is_player)
-    				botright++;
-    			break;
-    		}
-    	}
-    	while(GameManager.occupiedSpots.ContainsKey(new Vector2(priorPos.x-botleft-1, priorPos.y-botleft-1)))
-    	{
-    		if(!GameManager.occupiedSpots[new Vector2(priorPos.x-botleft-1, priorPos.y-botleft-1)])
-    		{
-    			botleft++;
-    		}
-    		else
-    		{
-    			if(GameManager.pieceLocation[new Vector2(priorPos.x-botleft-1, priorPos.y-botleft-1)].player_check() != is_player)
-    				botleft++;
-    			break;
-    		}
-    	}
     }
 
     //kills the object.

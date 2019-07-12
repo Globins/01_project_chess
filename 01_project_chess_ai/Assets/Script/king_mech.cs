@@ -25,7 +25,7 @@ public class king_mech : Piece
     {
         if(!alive)
         	DestroyImmediate(this.gameObject);
-    	if(!GameManager.instance.playersTurn) return;
+    	if(!GameManager.instance.playersTurn && is_player) return;
     	if(Input.GetMouseButtonDown(0))
         	onClick();
         if(selected)
@@ -53,7 +53,7 @@ public class king_mech : Piece
 		else if(selected)
 		{
 			//Error
-			if((transform.position.y < 0 || transform.position.y > 7) && (transform.position.x < 0 || transform.position.x > 7))
+			if((transform.position.y < 0 || transform.position.y > 7) && (transform.position.x < 0 || transform.position.x > 7) || gridPos == priorPos)
 			{
 				Debug.Log("R1");
 				GameManager.instance.reset_piece = true;
