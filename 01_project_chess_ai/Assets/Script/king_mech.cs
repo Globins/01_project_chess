@@ -25,7 +25,7 @@ public class king_mech : Piece
     {
         if(!alive)
         	DestroyImmediate(this.gameObject);
-    	if(!GameManager.instance.playersTurn && is_player) return;
+    	if(!GameManager.instance.playersTurn == is_player) return;
     	if(Input.GetMouseButtonDown(0))
         	onClick();
         if(selected)

@@ -30,7 +30,7 @@ public class pawn_mech : Piece
     {
         if(!alive)
         	DestroyImmediate(this.gameObject);
-    	if(!GameManager.instance.playersTurn && is_player) return;
+    	if(!GameManager.instance.playersTurn == is_player) return;
     	if(Input.GetMouseButtonDown(0))
         	onClick();
         if(selected)
@@ -71,7 +71,7 @@ public class pawn_mech : Piece
 				GameManager.occupiedSpots[new Vector2(priorPos.x+deltax, priorPos.y+deltay)])
 			{
 				Debug.Log("A");
-	    		if(GameManager.pieceLocation[new Vector2(priorPos.x+deltax, priorPos.y+deltay)].player_check())
+	    		if(GameManager.pieceLocation[new Vector2(priorPos.x+deltax, priorPos.y+deltay)].player_check() == is_player)
 	    			refresh = true;
 	    		else
 	    		{

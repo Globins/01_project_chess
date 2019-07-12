@@ -34,7 +34,7 @@ public abstract class Piece : MonoBehaviour
     	Vector2 new_pos = old_pos;
     	if(GameManager.occupiedSpots[move_here])
     	{
-    		if(GameManager.pieceLocation[move_here].player_check())
+    		if(GameManager.pieceLocation[move_here].player_check() == GameManager.pieceLocation[old_pos].player_check())
     			refresh = true;
     		else
 				capture(move_here);
