@@ -2,10 +2,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-//Checklist:
-
-//Add function where it can turn into any lost pieces when it edges the edge
-
 public class king_mech : Piece
 {
     private SpriteRenderer thisPiece;
@@ -16,7 +12,8 @@ public class king_mech : Piece
     private bool firstMove = true;
     private bool alive = true;
     private bool is_player = false;
-
+    private bool can_castle_l = false;
+    private bool can_castle_r = false;
     // Start is called before the first frame update
     void Start()
     {
@@ -25,6 +22,8 @@ public class king_mech : Piece
         GameManager.pieceLocation.Add(priorPos,this);
         if(priorPos.y == 0 || priorPos.y == 1)
             is_player = true;
+        if(GameManager.instance.gameStarted)
+            is_player = !is_player;
     }
     // Update is called once per frame
     void Update()
@@ -45,20 +44,37 @@ public class king_mech : Piece
         RaycastHit2D select = Physics2D.Raycast(Camera.main.ScreenToWorldPoint(mousePos), Vector2.zero);
         gridPos = base.mouseToGrid(mousePos);
         if(select && select.transform.gameObject.tag == "Piece" && !GameManager.instance.hasPieceInHand && priorPos == gridPos)
+        {
             pickUpPiece();
+            total_moves = get_moves();
+        }
         else if(selected)
         {
-            total_moves = get_moves();
             if(total_moves.Contains(gridPos))
             {
                 transform.position = move_piece(priorPos, gridPos);
                 if(firstMove)
                 {
+                    if(can_castle_l && transform.position.x == priorPos.x-2)
+                    {
+                        Piece temp = GameManager.pieceLocation[new Vector2(priorPos.x-4, priorPos.y)];
+                        temp.transform.position = temp.move_piece(new Vector2(priorPos.x-4, priorPos.y),new Vector2(priorPos.x-1, priorPos.y));
+                        temp.land_piece_set();
+                        GameManager.instance.isPlayerTurn = !GameManager.instance.isPlayerTurn;
+                    }
+                    else if(can_castle_r && transform.position.x == priorPos.x+2)
+                    {
+                        Piece temp = GameManager.pieceLocation[new Vector2(priorPos.x+3, priorPos.y)];
+                        temp.transform.position = temp.move_piece(new Vector2(priorPos.x+3, priorPos.y),new Vector2(priorPos.x+1, priorPos.y));
+                        temp.land_piece_set();
+                        GameManager.instance.isPlayerTurn = !GameManager.instance.isPlayerTurn;
+                    }
                     firstMove = false;
                 }
             }
             else
                 refresh_piece();
+            GameManager.instance.remove_highlights();
             land_piece_set();
         }
     }
@@ -66,87 +82,50 @@ public class king_mech : Piece
     private List<Vector2> get_moves()
     {
         List<Vector2> moves = new List<Vector2>();
+        List<Vector2> spaces = new List<Vector2>();
+        spaces.Add(new Vector2(priorPos.x+1, priorPos.y+1));
+        spaces.Add(new Vector2(priorPos.x-1, priorPos.y+1));
+        spaces.Add(new Vector2(priorPos.x+1, priorPos.y-1));
+        spaces.Add(new Vector2(priorPos.x-1, priorPos.y-1));
+        spaces.Add(new Vector2(priorPos.x, priorPos.y-1));
+        spaces.Add(new Vector2(priorPos.x, priorPos.y+1));
+        spaces.Add(new Vector2(priorPos.x+1, priorPos.y));
+        spaces.Add(new Vector2(priorPos.x-1, priorPos.y));
+        if(firstMove)
+        {
+            can_castle_l = can_castle_left();
+            if(can_castle_l)
+            {
+                moves.Add(new Vector2(priorPos.x-2, priorPos.y));
+                GameManager.instance.show_highlight(new Vector2(priorPos.x-2, priorPos.y),true);
+            }
+            can_castle_r = can_castle_right();
+            if(can_castle_r)
+            {
+                moves.Add(new Vector2(priorPos.x+2, priorPos.y));
+                GameManager.instance.show_highlight(new Vector2(priorPos.x+2, priorPos.y),true);
+            }
+        }
         //Basic Moves
-        if(GameManager.occupiedSpots.ContainsKey(new Vector2(priorPos.x+1, priorPos.y+1)))
+        for(int i = 0; i < spaces.Count; i++)
         {
-            if(GameManager.occupiedSpots[new Vector2(priorPos.x+1, priorPos.y+1)])
+            Vector2 temp = spaces[i];
+            if(GameManager.occupiedSpots.ContainsKey(temp))
             {
-                if(GameManager.pieceLocation[new Vector2(priorPos.x+1, priorPos.y+1)].player_check() != is_player)
-                    moves.Add(new Vector2(priorPos.x+1, priorPos.y+1));
+                if(GameManager.occupiedSpots[temp])
+                {
+                    if(GameManager.pieceLocation[temp].player_check() != is_player)
+                    {
+                        moves.Add(temp);
+                        GameManager.instance.show_highlight(temp,false);
+                    }
+                }
+                else
+                {
+                    moves.Add(temp);
+                    GameManager.instance.show_highlight(temp,true);
+                }
             }
-            else
-                moves.Add(new Vector2(priorPos.x+1, priorPos.y+1));
-        }
-        if(GameManager.occupiedSpots.ContainsKey(new Vector2(priorPos.x-1, priorPos.y+1)))
-        {
-            if(GameManager.occupiedSpots[new Vector2(priorPos.x-1, priorPos.y+1)])
-            {
-                if(GameManager.pieceLocation[new Vector2(priorPos.x-1, priorPos.y+1)].player_check() != is_player)
-                    moves.Add(new Vector2(priorPos.x-1, priorPos.y+1));
-            }
-            else
-                moves.Add(new Vector2(priorPos.x-1, priorPos.y+1));
-        }
-        if(GameManager.occupiedSpots.ContainsKey(new Vector2(priorPos.x+1, priorPos.y-1)))
-        {
-            if(GameManager.occupiedSpots[new Vector2(priorPos.x+1, priorPos.y-1)])
-            {
-                if(GameManager.pieceLocation[new Vector2(priorPos.x+1, priorPos.y-1)].player_check() != is_player)
-                    moves.Add(new Vector2(priorPos.x+1, priorPos.y-1));
-            }
-            else
-                moves.Add(new Vector2(priorPos.x+1, priorPos.y-1));
-        }
-        if(GameManager.occupiedSpots.ContainsKey(new Vector2(priorPos.x-1, priorPos.y-1)))
-        {
-            if(GameManager.occupiedSpots[new Vector2(priorPos.x-1, priorPos.y-1)])
-            {
-                if(GameManager.pieceLocation[new Vector2(priorPos.x-1, priorPos.y-1)].player_check() != is_player)
-                    moves.Add(new Vector2(priorPos.x-1, priorPos.y-1));
-            }
-            else
-                moves.Add(new Vector2(priorPos.x-1, priorPos.y-1));
-        }
-
-        if(GameManager.occupiedSpots.ContainsKey(new Vector2(priorPos.x, priorPos.y+1)))
-        {
-            if(GameManager.occupiedSpots[new Vector2(priorPos.x, priorPos.y+1)])
-            {
-                if(GameManager.pieceLocation[new Vector2(priorPos.x, priorPos.y+1)].player_check() != is_player)
-                    moves.Add(new Vector2(priorPos.x, priorPos.y+1));
-            }
-            else
-                moves.Add(new Vector2(priorPos.x, priorPos.y+1));
-        }
-        if(GameManager.occupiedSpots.ContainsKey(new Vector2(priorPos.x-1, priorPos.y)))
-        {
-            if(GameManager.occupiedSpots[new Vector2(priorPos.x-1, priorPos.y)])
-            {
-                if(GameManager.pieceLocation[new Vector2(priorPos.x-1, priorPos.y)].player_check() != is_player)
-                    moves.Add(new Vector2(priorPos.x-1, priorPos.y));
-            }
-            else
-                moves.Add(new Vector2(priorPos.x-1, priorPos.y));
-        }
-        if(GameManager.occupiedSpots.ContainsKey(new Vector2(priorPos.x+1, priorPos.y)))
-        {
-            if(GameManager.occupiedSpots[new Vector2(priorPos.x+1, priorPos.y)])
-            {
-                if(GameManager.pieceLocation[new Vector2(priorPos.x+1, priorPos.y)].player_check() != is_player)
-                    moves.Add(new Vector2(priorPos.x+1, priorPos.y));
-            }
-            else
-                moves.Add(new Vector2(priorPos.x+1, priorPos.y));
-        }
-        if(GameManager.occupiedSpots.ContainsKey(new Vector2(priorPos.x, priorPos.y-1)))
-        {
-            if(GameManager.occupiedSpots[new Vector2(priorPos.x, priorPos.y-1)])
-            {
-                if(GameManager.pieceLocation[new Vector2(priorPos.x, priorPos.y-1)].player_check() != is_player)
-                    moves.Add(new Vector2(priorPos.x, priorPos.y-1));
-            }
-            else
-                moves.Add(new Vector2(priorPos.x, priorPos.y-1));
         }
         return moves;
     }
@@ -187,5 +166,28 @@ public class king_mech : Piece
     {
         return is_player;
     }
-
+    private bool can_castle_left()
+    {
+        List<Vector2> horz_moves = base.horizontal_bounds(priorPos);
+        GameManager.instance.remove_highlights();
+        if(horz_moves.Contains(new Vector2(priorPos.x-3, priorPos.y)))
+            if(GameManager.occupiedSpots[new Vector2(priorPos.x-4, priorPos.y)])
+                if(GameManager.pieceLocation[new Vector2(priorPos.x-4, priorPos.y)].player_check() == is_player)
+                    if(GameManager.pieceLocation[new Vector2(priorPos.x-4, priorPos.y)] is rook_mech)
+                        if(GameManager.pieceLocation[new Vector2(priorPos.x-4, priorPos.y)].firstMoveCheck())
+                            return true;
+        return false;
+    }
+    private bool can_castle_right()
+    {
+        List<Vector2> horz_moves = base.horizontal_bounds(priorPos);
+        GameManager.instance.remove_highlights();
+        if(horz_moves.Contains(new Vector2(priorPos.x+2, priorPos.y)))
+            if(GameManager.occupiedSpots[new Vector2(priorPos.x+3, priorPos.y)])
+                if(GameManager.pieceLocation[new Vector2(priorPos.x+3, priorPos.y)].player_check() == is_player)
+                    if(GameManager.pieceLocation[new Vector2(priorPos.x+3, priorPos.y)] is rook_mech)
+                        if(GameManager.pieceLocation[new Vector2(priorPos.x+3, priorPos.y)].firstMoveCheck())
+                            return true;
+        return false;
+    }
 }

@@ -2,10 +2,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-//Checklist:
-
-//Add function where it can turn into any lost pieces when it edges the edge
-
 public class rook_mech : Piece
 {
 	private SpriteRenderer thisPiece;
@@ -25,6 +21,8 @@ public class rook_mech : Piece
         GameManager.pieceLocation.Add(priorPos,this);
         if(priorPos.y == 0 || priorPos.y == 1)
         	is_player = true;
+        if(GameManager.instance.gameStarted)
+            is_player = !is_player;
     }
     // Update is called once per frame
     void Update()
@@ -45,10 +43,12 @@ public class rook_mech : Piece
         RaycastHit2D select = Physics2D.Raycast(Camera.main.ScreenToWorldPoint(mousePos), Vector2.zero);
         gridPos = base.mouseToGrid(mousePos);
         if(select && select.transform.gameObject.tag == "Piece" && !GameManager.instance.hasPieceInHand && priorPos == gridPos)
+        {
             pickUpPiece();
+            total_moves = get_moves();
+        }
         else if(selected)
         {
-            total_moves = get_moves();
             if(total_moves.Contains(gridPos))
             {
                 transform.position = move_piece(priorPos, gridPos);
@@ -57,6 +57,7 @@ public class rook_mech : Piece
             }
             else
                 refresh_piece();
+            GameManager.instance.remove_highlights();
             land_piece_set();
         }
     }

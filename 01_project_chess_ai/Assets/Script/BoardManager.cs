@@ -7,11 +7,13 @@ public class BoardManager : MonoBehaviour
 	public GameObject[] outerBoardTiles;
 	public GameObject[] gameTiles;
 	public GameObject[] boardPieces;
+    public GameObject[] highlights;
 	public int columns = 8;
 	public int rows = 8;
 	private bool is_black = true;
 	private Transform boardHolder;
 	private Transform pieceHolder;
+    private Transform highlightHolder;
 	private List <Vector2> gridPositions = new List <Vector2> ();
 
 	void InitialiseList()
@@ -30,6 +32,7 @@ public class BoardManager : MonoBehaviour
     {
         //Instantiate Board and set boardHolder to its transform.
         boardHolder = new GameObject ("Board").transform;
+        highlightHolder = new GameObject ("Highlight").transform;
         for(int x = -1; x < columns + 1; x++)
         {
             for(int y = -1; y < rows + 1; y++)
@@ -133,5 +136,39 @@ public class BoardManager : MonoBehaviour
         BoardSetup ();
         PieceSetup ();
         InitialiseList ();
+    }
+    public void promote_pawn(Vector2 pos)
+    {
+        if(pos.y == 0)
+        {
+            GameObject instance = Instantiate (black_dropdown.promoted, new Vector3 (pos.x, pos.y, 0f), Quaternion.identity) as GameObject;
+            instance.transform.SetParent (pieceHolder);
+        }
+        else
+        {
+            GameObject instance = Instantiate (white_dropdown.promoted, new Vector3 (pos.x, pos.y, 0f), Quaternion.identity) as GameObject;
+            instance.transform.SetParent (pieceHolder);
+        }
+    }
+    public void show_moves(Vector2 location, bool move)
+    {
+        if(move)
+        {
+            GameObject instance = Instantiate (highlights[0], new Vector3 (location.x, location.y, 0f), Quaternion.identity) as GameObject;
+            instance.transform.SetParent(highlightHolder);
+        }
+        else
+        {
+            GameObject instance = Instantiate (highlights[1], new Vector3 (location.x, location.y, 0f), Quaternion.identity) as GameObject;
+            instance.transform.SetParent(highlightHolder);
+        }
+    }
+    public void remove_all_highlights()
+    {
+        GameObject[] delete =  GameObject.FindGameObjectsWithTag ("Highlight");
+        for(int i = 0; i < delete.Length; i++)
+        {
+            Destroy(delete[i]);
+        }
     }
 }

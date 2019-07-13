@@ -2,10 +2,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-//Checklist:
-
-//Add function where it can turn into any lost pieces when it edges the edge
-
 public class knight_mech : Piece
 {
 	private SpriteRenderer thisPiece;
@@ -24,6 +20,8 @@ public class knight_mech : Piece
         GameManager.pieceLocation.Add(priorPos,this);
         if(priorPos.y == 0 || priorPos.y == 1)
         	is_player = true;
+       	if(GameManager.instance.gameStarted)
+            is_player = !is_player;
     }
     // Update is called once per frame
     void Update()
@@ -45,14 +43,17 @@ public class knight_mech : Piece
 		gridPos = base.mouseToGrid(mousePos);
 		
 		if(select && select.transform.gameObject.tag == "Piece" && !GameManager.instance.hasPieceInHand && priorPos == gridPos)
+		{
 			pickUpPiece();
+			total_moves = get_moves();
+		}
 		else if(selected)
 		{
-			total_moves = get_moves();
 			if(total_moves.Contains(gridPos))
 				transform.position = move_piece(priorPos, gridPos);
 			else
 				refresh_piece();
+			GameManager.instance.remove_highlights();
 			land_piece_set();
 		}
     }
@@ -60,103 +61,36 @@ public class knight_mech : Piece
     private List<Vector2> get_moves()
     {
         List<Vector2> moves = new List<Vector2>();
+        List<Vector2> spaces = new List<Vector2>();
+        spaces.Add(new Vector2(priorPos.x-1, priorPos.y+2));
+        spaces.Add(new Vector2(priorPos.x+1, priorPos.y+2));
+        spaces.Add(new Vector2(priorPos.x-1, priorPos.y-2));
+        spaces.Add(new Vector2(priorPos.x+1, priorPos.y-2));
+        spaces.Add(new Vector2(priorPos.x+2, priorPos.y-1));
+        spaces.Add(new Vector2(priorPos.x+2, priorPos.y+1));
+        spaces.Add(new Vector2(priorPos.x-2, priorPos.y-1));
+        spaces.Add(new Vector2(priorPos.x-2, priorPos.y+1));
         //Basic Moves
-		if(GameManager.occupiedSpots.ContainsKey(new Vector2(priorPos.x-1, priorPos.y+2)))
-		{
-			if(GameManager.occupiedSpots[new Vector2(priorPos.x-1, priorPos.y+2)])
+        for(int i = 0; i < spaces.Count; i++)
+        {
+        	Vector2 temp = spaces[i];
+			if(GameManager.occupiedSpots.ContainsKey(temp))
 			{
-				if(GameManager.pieceLocation[new Vector2(priorPos.x-1, priorPos.y+2)].player_check() != is_player)
-					moves.Add(new Vector2(priorPos.x-1, priorPos.y+2));
+				if(GameManager.occupiedSpots[temp])
+				{
+					if(GameManager.pieceLocation[temp].player_check() != is_player)
+					{
+						moves.Add(temp);
+						GameManager.instance.show_highlight(temp,false);
+					}
+				}
+				else
+				{
+					moves.Add(temp);
+					GameManager.instance.show_highlight(temp,true);
+				}
 			}
-			else
-				moves.Add(new Vector2(priorPos.x-1, priorPos.y+2));
-		}
-
-
-		if(GameManager.occupiedSpots.ContainsKey(new Vector2(priorPos.x+1, priorPos.y+2)))
-		{
-			if(GameManager.occupiedSpots[new Vector2(priorPos.x+1, priorPos.y+2)])
-			{
-				if(GameManager.pieceLocation[new Vector2(priorPos.x+1, priorPos.y+2)].player_check() != is_player)
-					moves.Add(new Vector2(priorPos.x+1, priorPos.y+2));
-			}
-			else
-				moves.Add(new Vector2(priorPos.x+1, priorPos.y+2));
-		}
-
-
-		if(GameManager.occupiedSpots.ContainsKey(new Vector2(priorPos.x-1, priorPos.y-2)))
-		{
-			if(GameManager.occupiedSpots[new Vector2(priorPos.x-1, priorPos.y-2)])
-			{
-				if(GameManager.pieceLocation[new Vector2(priorPos.x-1, priorPos.y-2)].player_check() != is_player)
-					moves.Add(new Vector2(priorPos.x-1, priorPos.y-2));
-			}
-			else
-				moves.Add(new Vector2(priorPos.x-1, priorPos.y-2));
-		}
-
-
-		if(GameManager.occupiedSpots.ContainsKey(new Vector2(priorPos.x+1, priorPos.y-2)))
-		{
-			if(GameManager.occupiedSpots[new Vector2(priorPos.x+1, priorPos.y-2)])
-			{
-				if(GameManager.pieceLocation[new Vector2(priorPos.x+1, priorPos.y-2)].player_check() != is_player)
-					moves.Add(new Vector2(priorPos.x+1, priorPos.y-2));
-			}
-			else
-				moves.Add(new Vector2(priorPos.x+1, priorPos.y-2));
-		}
-
-
-		if(GameManager.occupiedSpots.ContainsKey(new Vector2(priorPos.x+2, priorPos.y-1)))
-		{	
-			if(GameManager.occupiedSpots[new Vector2(priorPos.x+2, priorPos.y-1)])
-			{
-				if(GameManager.pieceLocation[new Vector2(priorPos.x+2, priorPos.y-1)].player_check() != is_player)
-					moves.Add(new Vector2(priorPos.x+2, priorPos.y-1));
-			}
-			else
-				moves.Add(new Vector2(priorPos.x+2, priorPos.y-1));
-		}
-
-
-		if(GameManager.occupiedSpots.ContainsKey(new Vector2(priorPos.x+2, priorPos.y+1)))
-		{
-			if(GameManager.occupiedSpots[new Vector2(priorPos.x+2, priorPos.y+1)])
-			{
-				if(GameManager.pieceLocation[new Vector2(priorPos.x+2, priorPos.y+1)].player_check() != is_player)
-					moves.Add(new Vector2(priorPos.x+2, priorPos.y+1));
-			}
-			else
-				moves.Add(new Vector2(priorPos.x+2, priorPos.y+1));
-		}
-
-
-		if(GameManager.occupiedSpots.ContainsKey(new Vector2(priorPos.x-2, priorPos.y-1)))
-		{
-			if(GameManager.occupiedSpots[new Vector2(priorPos.x-2, priorPos.y-1)])
-			{
-				if(GameManager.pieceLocation[new Vector2(priorPos.x-2, priorPos.y-1)].player_check() != is_player)
-					moves.Add(new Vector2(priorPos.x-2, priorPos.y-1));
-			}
-			else
-				moves.Add(new Vector2(priorPos.x-2, priorPos.y-1));
-		}
-
-
-		if(GameManager.occupiedSpots.ContainsKey(new Vector2(priorPos.x-2, priorPos.y+1)))
-		{
-			if(GameManager.occupiedSpots[new Vector2(priorPos.x-2, priorPos.y+1)])
-			{
-				if(GameManager.pieceLocation[new Vector2(priorPos.x-2, priorPos.y+1)].player_check() != is_player)
-					moves.Add(new Vector2(priorPos.x-2, priorPos.y+1));
-			}
-			else
-				moves.Add(new Vector2(priorPos.x-2, priorPos.y+1));
-		}
-
-
+        }
         return moves;
     }
 

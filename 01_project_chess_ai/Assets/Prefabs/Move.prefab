@@ -10,9 +10,9 @@ GameObject:
   m_Component:
   - component: {fileID: 6326866232966479606}
   - component: {fileID: 2531543429005511244}
-  m_Layer: 10
+  m_Layer: 8
   m_Name: Move
-  m_TagString: Board
+  m_TagString: Highlight
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -65,10 +65,10 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 49770363
-  m_SortingLayer: 1
+  m_SortingLayerID: 1557291923
+  m_SortingLayer: 2
   m_SortingOrder: 0
-  m_Sprite: {fileID: 21300000, guid: 69d60a29987ec8c4c910db847bae308b, type: 3}
+  m_Sprite: {fileID: 21300000, guid: b9420003f4866934582ace3b7e7752af, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0

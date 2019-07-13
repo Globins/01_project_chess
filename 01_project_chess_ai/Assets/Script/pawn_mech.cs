@@ -2,10 +2,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-//Checklist:
-
-//Add function where it can turn into any lost pieces when it edges the edge
-
 public class pawn_mech : Piece
 {
 	private SpriteRenderer thisPiece;
@@ -27,6 +23,8 @@ public class pawn_mech : Piece
         GameManager.pieceLocation.Add(priorPos,this);
         if(priorPos.y == 0 || priorPos.y == 1)
         	is_player = true;
+        if(GameManager.instance.gameStarted)
+            is_player = !is_player;
     }
     // Update is called once per frame
     void Update()
@@ -47,10 +45,12 @@ public class pawn_mech : Piece
 		RaycastHit2D select = Physics2D.Raycast(Camera.main.ScreenToWorldPoint(mousePos), Vector2.zero);
 		gridPos = base.mouseToGrid(mousePos);
 		if(select && select.transform.gameObject.tag == "Piece" && !GameManager.instance.hasPieceInHand && priorPos == gridPos)
+		{
 			pickUpPiece();
+			total_moves = get_moves();
+		}
 		else if(selected)
 		{
-			total_moves = get_moves();
 			if(total_moves.Contains(gridPos))
 			{
 				transform.position = move_piece(priorPos, gridPos);
@@ -66,11 +66,10 @@ public class pawn_mech : Piece
 			}
 			else
 				refresh_piece();
+			GameManager.instance.remove_highlights();
 			land_piece_set();
-			if(transform.position.y == 7 || transform.position.y == 0)
-			{
+			if(priorPos.y == 7 || priorPos.y == 0)
 				pawn_promotion();
-			}
 		}
     }
 
@@ -85,17 +84,26 @@ public class pawn_mech : Piece
         //Basic Moves
 		if(GameManager.occupiedSpots.ContainsKey(new Vector2(priorPos.x, priorPos.y+ydir)))
 			if(!GameManager.occupiedSpots[new Vector2(priorPos.x, priorPos.y+ydir)])
+			{
 				moves.Add(new Vector2(priorPos.x, priorPos.y+ydir));
+				GameManager.instance.show_highlight(new Vector2(priorPos.x, priorPos.y+ydir), true);
+			}
 
 		if(GameManager.occupiedSpots.ContainsKey(new Vector2(priorPos.x-1, priorPos.y+ydir)))
 			if(GameManager.occupiedSpots[new Vector2(priorPos.x-1, priorPos.y+ydir)])
 				if(GameManager.pieceLocation[new Vector2(priorPos.x-1, priorPos.y+ydir)].player_check() != is_player)
+				{
 					moves.Add(new Vector2(priorPos.x-1, priorPos.y+ydir));
+					GameManager.instance.show_highlight(new Vector2(priorPos.x-1, priorPos.y+ydir), false);
+				}
 
 		if(GameManager.occupiedSpots.ContainsKey(new Vector2(priorPos.x+1, priorPos.y+ydir)))
 			if(GameManager.occupiedSpots[new Vector2(priorPos.x+1, priorPos.y+ydir)])
 				if(GameManager.pieceLocation[new Vector2(priorPos.x+1, priorPos.y+ydir)].player_check() != is_player)
+				{
 					moves.Add(new Vector2(priorPos.x+1, priorPos.y+ydir));
+					GameManager.instance.show_highlight(new Vector2(priorPos.x+1, priorPos.y+ydir), false);
+				}
 
 		//En passant moves
 		if(firstMove)
@@ -107,6 +115,8 @@ public class pawn_mech : Piece
 					if(GameManager.pieceLocation[new Vector2(priorPos.x, priorPos.y+ydir)].player_check() != is_player)
 					{
 						moves.Add(new Vector2(priorPos.x, priorPos.y+ydir*2));
+						GameManager.instance.show_highlight(new Vector2(priorPos.x, priorPos.y+ydir*2), true);
+						GameManager.instance.show_highlight(new Vector2(priorPos.x, priorPos.y+ydir), false);
 						kill_piece_behind = true;
 						en_passant = true;
 					}
@@ -114,25 +124,49 @@ public class pawn_mech : Piece
 				else
 				{
 					moves.Add(new Vector2(priorPos.x, priorPos.y+ydir*2));
+					GameManager.instance.show_highlight(new Vector2(priorPos.x, priorPos.y+ydir*2), true);
 					en_passant = true;
 				}
 			}
 		}
-		//Second rule will be added later
+		if(priorPos.y == 3 && !is_player)
+		{
 		if(GameManager.occupiedSpots.ContainsKey(new Vector2(priorPos.x-1, priorPos.y)))
 			if(GameManager.occupiedSpots[new Vector2(priorPos.x-1, priorPos.y)])
 				if(GameManager.pieceLocation[new Vector2(priorPos.x-1, priorPos.y)].player_check() != is_player && GameManager.pieceLocation[new Vector2(priorPos.x-1, priorPos.y)].pawn_enpassant())
 				{
 					moves.Add(new Vector2(priorPos.x-1, priorPos.y+ydir));
+					GameManager.instance.show_highlight(new Vector2(priorPos.x-1, priorPos.y+ydir), true);
 					kill_piece_behind = true;
 				}
 		if(GameManager.occupiedSpots.ContainsKey(new Vector2(priorPos.x+1, priorPos.y)))
 			if(GameManager.occupiedSpots[new Vector2(priorPos.x+1, priorPos.y)])
 				if(GameManager.pieceLocation[new Vector2(priorPos.x+1, priorPos.y)].player_check() != is_player && GameManager.pieceLocation[new Vector2(priorPos.x+1, priorPos.y)].pawn_enpassant())
 				{
+					GameManager.instance.show_highlight(new Vector2(priorPos.x+1, priorPos.y+ydir), true);
 					moves.Add(new Vector2(priorPos.x+1, priorPos.y+ydir));
 					kill_piece_behind = true;
 				}
+		}
+		if(priorPos.y == 4 && is_player)
+		{
+			if(GameManager.occupiedSpots.ContainsKey(new Vector2(priorPos.x-1, priorPos.y)))
+				if(GameManager.occupiedSpots[new Vector2(priorPos.x-1, priorPos.y)])
+					if(GameManager.pieceLocation[new Vector2(priorPos.x-1, priorPos.y)].player_check() != is_player && GameManager.pieceLocation[new Vector2(priorPos.x-1, priorPos.y)].pawn_enpassant())
+					{
+						GameManager.instance.show_highlight(new Vector2(priorPos.x-1, priorPos.y+ydir), true);
+						moves.Add(new Vector2(priorPos.x-1, priorPos.y+ydir));
+						kill_piece_behind = true;
+					}
+			if(GameManager.occupiedSpots.ContainsKey(new Vector2(priorPos.x+1, priorPos.y)))
+				if(GameManager.occupiedSpots[new Vector2(priorPos.x+1, priorPos.y)])
+					if(GameManager.pieceLocation[new Vector2(priorPos.x+1, priorPos.y)].player_check() != is_player && GameManager.pieceLocation[new Vector2(priorPos.x+1, priorPos.y)].pawn_enpassant())
+					{
+						GameManager.instance.show_highlight(new Vector2(priorPos.x+1, priorPos.y+ydir), true);
+						moves.Add(new Vector2(priorPos.x+1, priorPos.y+ydir));
+						kill_piece_behind = true;
+					}
+		}
         return moves;
     }
 
@@ -180,10 +214,7 @@ public class pawn_mech : Piece
     private void pawn_promotion()
     {
     	transform.position = new Vector2(100, 100);
-    	GameManager.instance.promote_pawn(gridPos);
-        //calls a function to open a menu where the player can choose what piece they want
-        //after they pick, the pawn is destroyed and replaced with the piece theyve chosen
-
+    	GameManager.instance.promote(priorPos);
         DestroyImmediate(this.gameObject);
     }
 }

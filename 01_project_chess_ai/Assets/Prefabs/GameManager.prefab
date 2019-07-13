@@ -69,6 +69,9 @@ MonoBehaviour:
   - {fileID: 6292412001046842351, guid: 92bfc380c52d6af42bab5015d8a851bf, type: 3}
   - {fileID: 4734149862388519797, guid: 2de4f6331b057d04da4a6bbe0fc637c6, type: 3}
   - {fileID: 9056805181397190907, guid: 783df299b6dc665458dba55f463fd820, type: 3}
+  highlights:
+  - {fileID: 265328750334515041, guid: 6c4a01196f995c94d85d21e86a1d1400, type: 3}
+  - {fileID: 3427348231596713010, guid: 2c57c855b7f75ed4995169f984206353, type: 3}
   columns: 8
   rows: 8
 --- !u!114 &6871857142399221794
@@ -84,5 +87,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   hasPieceInHand: 0
-  playersTurn: 1
+  isPlayerTurn: 1
   reset_piece: 0
+  white_check: 0
+  black_check: 0
+  gameStarted: 0
