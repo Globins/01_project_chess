@@ -89,23 +89,10 @@ public class BoardManager : MonoBehaviour
             	if(y <= 1 || y >= rows-2)
             	{
 	            	if(y == 1)
-	            		toInstantiate = boardPieces[3];
-	            	else if(y==rows-2)
 	            		toInstantiate = boardPieces[9];
+	            	else if(y==rows-2)
+	            		toInstantiate = boardPieces[3];
 	            	else if(y == 0)
-	            	{
-	            		if(x == 0 || x == columns-1)
-	            			toInstantiate = boardPieces[5];
-	            		else if(x == 1 || x == columns-2)
-	            			toInstantiate = boardPieces[2];
-	            		else if(x == 2 || x == columns-3)
-	            			toInstantiate = boardPieces[0];
-	            		else if(x == 3)
-	            			toInstantiate =boardPieces[4];
-	            		else
-	            			toInstantiate= boardPieces[1];
-	            	}
-	            	else if(y == rows-1)
 	            	{
 	            		if(x == 0 || x == columns-1)
 	            			toInstantiate = boardPieces[11];
@@ -117,6 +104,19 @@ public class BoardManager : MonoBehaviour
 	            			toInstantiate =boardPieces[10];
 	            		else
 	            			toInstantiate= boardPieces[7];
+	            	}
+	            	else if(y == rows-1)
+	            	{
+	            		if(x == 0 || x == columns-1)
+	            			toInstantiate = boardPieces[5];
+	            		else if(x == 1 || x == columns-2)
+	            			toInstantiate = boardPieces[2];
+	            		else if(x == 2 || x == columns-3)
+	            			toInstantiate = boardPieces[0];
+	            		else if(x == 3)
+	            			toInstantiate =boardPieces[4];
+	            		else
+	            			toInstantiate= boardPieces[1];
 	            	}
 	                //Instantiate the GameObject instance using the prefab chosen for toInstantiate at the Vector3 corresponding to current grid position in loop, cast it to GameObject.
 	                GameObject instance = Instantiate (toInstantiate, new Vector3 (x, y, 0f), Quaternion.identity) as GameObject;

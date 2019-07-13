@@ -2,14 +2,20 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+//Checklist:
+
+//Add function where it can turn into any lost pieces when it edges the edge
+
 public class king_mech : Piece
 {
-	private SpriteRenderer thisPiece;
-	private Vector2 priorPos;
-	private Vector2 gridPos;
-	private bool selected = false;
-	private bool alive = true;
-	private bool is_player = false;
+    private SpriteRenderer thisPiece;
+    private Vector2 priorPos;
+    private Vector2 gridPos;
+    private List<Vector2> total_moves;
+    private bool selected = false;
+    private bool firstMove = true;
+    private bool alive = true;
+    private bool is_player = false;
 
     // Start is called before the first frame update
     void Start()
@@ -18,83 +24,158 @@ public class king_mech : Piece
         priorPos = new Vector2(transform.position.x, transform.position.y);
         GameManager.pieceLocation.Add(priorPos,this);
         if(priorPos.y == 0 || priorPos.y == 1)
-        	is_player = true;
+            is_player = true;
     }
     // Update is called once per frame
     void Update()
     {
         if(!alive)
-        	DestroyImmediate(this.gameObject);
-    	if(!GameManager.instance.playersTurn == is_player) return;
-    	if(Input.GetMouseButtonDown(0))
-        	onClick();
+            DestroyImmediate(this.gameObject);
+        if(!GameManager.instance.isPlayerTurn == is_player) return;
+        if(Input.GetMouseButtonDown(0) && alive)
+            onClick();
         if(selected)
-        	transform.position = Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, 10f));
+            transform.position = Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, 10f));
     }
     
     private void onClick()
     {
-    	//on click, it positions itself in the grid and ends turn
-		Vector2 mousePos = new Vector2(Input.mousePosition.x, Input.mousePosition.y);
-		RaycastHit2D select = Physics2D.Raycast(Camera.main.ScreenToWorldPoint(mousePos), Vector2.zero);
-		gridPos = base.mouseToGrid(Input.mousePosition.x, Input.mousePosition.y);
-        float deltax = gridPos.x-priorPos.x;
-        float deltay = gridPos.y-priorPos.y;
-		//if the object wasnt selected, it becomes selected and follows mouse
-		if(select && select.transform.gameObject.tag == "Piece" &&
-			Mathf.Abs(deltay) == 0 && Mathf.Abs(deltax) == 0 && 
-			!GameManager.instance.hasPieceInHand &&
-			GameManager.pieceLocation.ContainsKey(priorPos))
-		{
-			Debug.Log("P");
-			pickUpPiece();
-		}
+        //on click, it positions itself in the grid and ends turn
+        Vector2 mousePos = new Vector2(Input.mousePosition.x, Input.mousePosition.y);
+        RaycastHit2D select = Physics2D.Raycast(Camera.main.ScreenToWorldPoint(mousePos), Vector2.zero);
+        gridPos = base.mouseToGrid(mousePos);
+        if(select && select.transform.gameObject.tag == "Piece" && !GameManager.instance.hasPieceInHand && priorPos == gridPos)
+            pickUpPiece();
+        else if(selected)
+        {
+            total_moves = get_moves();
+            if(total_moves.Contains(gridPos))
+            {
+                transform.position = move_piece(priorPos, gridPos);
+                if(firstMove)
+                {
+                    firstMove = false;
+                }
+            }
+            else
+                refresh_piece();
+            land_piece_set();
+        }
+    }
 
-		else if(selected)
-		{
-			//Error
-			if((transform.position.y < 0 || transform.position.y > 7) && (transform.position.x < 0 || transform.position.x > 7) || gridPos == priorPos)
-			{
-				Debug.Log("R1");
-				GameManager.instance.reset_piece = true;
-				transform.position = priorPos;
-			}
-			else if(((Mathf.Abs(deltax) == 1 || Mathf.Abs(deltax) == 0) && (Mathf.Abs(deltay) == 1 || Mathf.Abs(deltay) == 0)) &&
-					!(Mathf.Abs(deltax) == 0 && Mathf.Abs(deltay) == 0))
-			{
-				Debug.Log("M");
-				transform.position = base.move_piece(deltax, deltay, gridPos, priorPos); //places object there
-			}
-			//Default case
-			else
-			{
-				Debug.Log("R2");
-				GameManager.instance.reset_piece = true;
-				transform.position = priorPos;
-			}
-			land_piece_set();
-		}
+    private List<Vector2> get_moves()
+    {
+        List<Vector2> moves = new List<Vector2>();
+        //Basic Moves
+        if(GameManager.occupiedSpots.ContainsKey(new Vector2(priorPos.x+1, priorPos.y+1)))
+        {
+            if(GameManager.occupiedSpots[new Vector2(priorPos.x+1, priorPos.y+1)])
+            {
+                if(GameManager.pieceLocation[new Vector2(priorPos.x+1, priorPos.y+1)].player_check() != is_player)
+                    moves.Add(new Vector2(priorPos.x+1, priorPos.y+1));
+            }
+            else
+                moves.Add(new Vector2(priorPos.x+1, priorPos.y+1));
+        }
+        if(GameManager.occupiedSpots.ContainsKey(new Vector2(priorPos.x-1, priorPos.y+1)))
+        {
+            if(GameManager.occupiedSpots[new Vector2(priorPos.x-1, priorPos.y+1)])
+            {
+                if(GameManager.pieceLocation[new Vector2(priorPos.x-1, priorPos.y+1)].player_check() != is_player)
+                    moves.Add(new Vector2(priorPos.x-1, priorPos.y+1));
+            }
+            else
+                moves.Add(new Vector2(priorPos.x-1, priorPos.y+1));
+        }
+        if(GameManager.occupiedSpots.ContainsKey(new Vector2(priorPos.x+1, priorPos.y-1)))
+        {
+            if(GameManager.occupiedSpots[new Vector2(priorPos.x+1, priorPos.y-1)])
+            {
+                if(GameManager.pieceLocation[new Vector2(priorPos.x+1, priorPos.y-1)].player_check() != is_player)
+                    moves.Add(new Vector2(priorPos.x+1, priorPos.y-1));
+            }
+            else
+                moves.Add(new Vector2(priorPos.x+1, priorPos.y-1));
+        }
+        if(GameManager.occupiedSpots.ContainsKey(new Vector2(priorPos.x-1, priorPos.y-1)))
+        {
+            if(GameManager.occupiedSpots[new Vector2(priorPos.x-1, priorPos.y-1)])
+            {
+                if(GameManager.pieceLocation[new Vector2(priorPos.x-1, priorPos.y-1)].player_check() != is_player)
+                    moves.Add(new Vector2(priorPos.x-1, priorPos.y-1));
+            }
+            else
+                moves.Add(new Vector2(priorPos.x-1, priorPos.y-1));
+        }
+
+        if(GameManager.occupiedSpots.ContainsKey(new Vector2(priorPos.x, priorPos.y+1)))
+        {
+            if(GameManager.occupiedSpots[new Vector2(priorPos.x, priorPos.y+1)])
+            {
+                if(GameManager.pieceLocation[new Vector2(priorPos.x, priorPos.y+1)].player_check() != is_player)
+                    moves.Add(new Vector2(priorPos.x, priorPos.y+1));
+            }
+            else
+                moves.Add(new Vector2(priorPos.x, priorPos.y+1));
+        }
+        if(GameManager.occupiedSpots.ContainsKey(new Vector2(priorPos.x-1, priorPos.y)))
+        {
+            if(GameManager.occupiedSpots[new Vector2(priorPos.x-1, priorPos.y)])
+            {
+                if(GameManager.pieceLocation[new Vector2(priorPos.x-1, priorPos.y)].player_check() != is_player)
+                    moves.Add(new Vector2(priorPos.x-1, priorPos.y));
+            }
+            else
+                moves.Add(new Vector2(priorPos.x-1, priorPos.y));
+        }
+        if(GameManager.occupiedSpots.ContainsKey(new Vector2(priorPos.x+1, priorPos.y)))
+        {
+            if(GameManager.occupiedSpots[new Vector2(priorPos.x+1, priorPos.y)])
+            {
+                if(GameManager.pieceLocation[new Vector2(priorPos.x+1, priorPos.y)].player_check() != is_player)
+                    moves.Add(new Vector2(priorPos.x+1, priorPos.y));
+            }
+            else
+                moves.Add(new Vector2(priorPos.x+1, priorPos.y));
+        }
+        if(GameManager.occupiedSpots.ContainsKey(new Vector2(priorPos.x, priorPos.y-1)))
+        {
+            if(GameManager.occupiedSpots[new Vector2(priorPos.x, priorPos.y-1)])
+            {
+                if(GameManager.pieceLocation[new Vector2(priorPos.x, priorPos.y-1)].player_check() != is_player)
+                    moves.Add(new Vector2(priorPos.x, priorPos.y-1));
+            }
+            else
+                moves.Add(new Vector2(priorPos.x, priorPos.y-1));
+        }
+        return moves;
     }
 
     //picks up the piece if it wasnt selected
     private void pickUpPiece()
     {
-		priorPos = transform.position;
-		selected = true;
-		gameObject.layer = 8;
-		thisPiece.sortingLayerName = "Highlight";
-		GameManager.instance.hasPieceInHand = true;
+        priorPos = transform.position;
+        selected = true;
+        gameObject.layer = 8;
+        thisPiece.sortingLayerName = "Highlight";
+        GameManager.instance.hasPieceInHand = true;
     }
 
     //places the piece down
-    private void land_piece_set()
+    public override void land_piece_set()
     {
-    	GameManager.occupiedSpots[new Vector2(transform.position.x, transform.position.y)] = true;
-        priorPos = new Vector2(transform.position.x, transform.position.y);
-		gameObject.layer = 9;
-		thisPiece.sortingLayerName = "Piece";
-		GameManager.instance.hasPieceInHand = false;
-		selected = false;
+        GameManager.occupiedSpots[transform.position] = true;
+        priorPos = transform.position;
+        gameObject.layer = 9;
+        thisPiece.sortingLayerName = "Piece";
+        GameManager.instance.hasPieceInHand = false;
+        selected = false;
+    }
+
+    private void refresh_piece()
+    {
+        GameManager.instance.reset_piece = true;
+        transform.position = priorPos;
     }
 
     //kills the object.
@@ -106,4 +187,5 @@ public class king_mech : Piece
     {
         return is_player;
     }
+
 }

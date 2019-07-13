@@ -19,7 +19,6 @@ public class Board : MonoBehaviour
         }
 
         GameManager.occupiedSpots.Add(currentPos,occupied);
-        thisPiece = GetComponent<SpriteRenderer>();
     }
 
     // Update is called once per frame
@@ -42,5 +41,6 @@ public class Board : MonoBehaviour
         	if(clicked) //To reset when the player presses on a different tile
         		clicked = false;
         }
+        
     }
 }

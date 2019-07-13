@@ -11,10 +11,13 @@ public class pawn_mech : Piece
 	private SpriteRenderer thisPiece;
 	private Vector2 priorPos;
 	private Vector2 gridPos;
+	private List<Vector2> total_moves;
 	private bool selected = false;
 	private bool firstMove = true;
 	private bool alive = true;
 	private bool is_player = false;
+	private bool en_passant = false;
+	private bool kill_piece_behind = false;
 
     // Start is called before the first frame update
     void Start()
@@ -30,8 +33,8 @@ public class pawn_mech : Piece
     {
         if(!alive)
         	DestroyImmediate(this.gameObject);
-    	if(!GameManager.instance.playersTurn == is_player) return;
-    	if(Input.GetMouseButtonDown(0))
+    	if(!GameManager.instance.isPlayerTurn == is_player) return;
+    	if(Input.GetMouseButtonDown(0) && alive)
         	onClick();
         if(selected)
         	transform.position = Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, 10f));
@@ -42,91 +45,95 @@ public class pawn_mech : Piece
     	//on click, it positions itself in the grid and ends turn
 		Vector2 mousePos = new Vector2(Input.mousePosition.x, Input.mousePosition.y);
 		RaycastHit2D select = Physics2D.Raycast(Camera.main.ScreenToWorldPoint(mousePos), Vector2.zero);
-		gridPos = base.mouseToGrid(Input.mousePosition.x, Input.mousePosition.y);
-        float deltax = gridPos.x-priorPos.x;
-        float deltay = gridPos.y-priorPos.y;
-        bool refresh = false;
-		//if the object wasnt selected, it becomes selected and follows mouse
-		if(select && select.transform.gameObject.tag == "Piece" &&
-			Mathf.Abs(deltay) == 0 && Mathf.Abs(deltax) == 0 && 
-			!GameManager.instance.hasPieceInHand &&
-			GameManager.pieceLocation.ContainsKey(priorPos))
-		{
-			Debug.Log("P");
+		gridPos = base.mouseToGrid(mousePos);
+		if(select && select.transform.gameObject.tag == "Piece" && !GameManager.instance.hasPieceInHand && priorPos == gridPos)
 			pickUpPiece();
-		}
-
 		else if(selected)
 		{
-			//Error
-			if(((transform.position.y < 0 || transform.position.y > 7) && (transform.position.x < 0 || transform.position.x > 7)) ||
-				(GameManager.instance.playersTurn && deltay < 0) || (!GameManager.instance.playersTurn && deltay > 0) ||
-				(!firstMove && Mathf.Abs(deltay) == 2))
+			total_moves = get_moves();
+			if(total_moves.Contains(gridPos))
 			{
-				Debug.Log("R1");
-				GameManager.instance.reset_piece = true;
-				transform.position = priorPos;
+				transform.position = move_piece(priorPos, gridPos);
+				if(firstMove)
+				{
+					firstMove = false;
+				}
+				if(kill_piece_behind)
+				{
+					base.capture(new Vector2(transform.position.x, transform.position.y-1));
+					kill_piece_behind = false;
+				}
 			}
-			else if(Mathf.Abs(deltax) == 1 && Mathf.Abs(deltay) == 1 &&
-				GameManager.occupiedSpots[new Vector2(priorPos.x+deltax, priorPos.y+deltay)])
-			{
-				Debug.Log("A");
-	    		if(GameManager.pieceLocation[new Vector2(priorPos.x+deltax, priorPos.y+deltay)].player_check() == is_player)
-	    			refresh = true;
-	    		else
-	    		{
-					base.capture(gridPos);
-			    	if(firstMove)
-    					firstMove = false;
-					move_piece(deltax,deltay,gridPos);
-	    		}
-			}
-			else if(new List<float>{1, 2}.Contains(Mathf.Abs(deltay)) &&
-				(!GameManager.occupiedSpots[gridPos] && deltax == 0))
-			{
-				Debug.Log("M");
-				move_piece(deltax,deltay,gridPos); //places object there
-			}
-			//Default case
 			else
-			{
-				Debug.Log("R2");
-				GameManager.instance.reset_piece = true;
-				transform.position = priorPos;
-			}
-			if(refresh)
-			{
-				Debug.Log("R2");
-				GameManager.instance.reset_piece = true;
-				transform.position = priorPos;
-			}
+				refresh_piece();
 			land_piece_set();
+			if(transform.position.y == 7 || transform.position.y == 0)
+			{
+				pawn_promotion();
+			}
 		}
     }
 
-    //deals with moving into an empty square, will only be called if outside parameters are correct
-    private void move_piece(float x, float y, Vector2 move_here)
+    private List<Vector2> get_moves()
     {
-    	if(x == 0 || x == 1 || x == -1)
+    	if(GameManager.instance.isPlayerTurn == is_player)
+    		en_passant = false;
+        List<Vector2> moves = new List<Vector2>();
+        float ydir = 1;
+        if(!is_player)
+        	ydir = -1;
+        //Basic Moves
+		if(GameManager.occupiedSpots.ContainsKey(new Vector2(priorPos.x, priorPos.y+ydir)))
+			if(!GameManager.occupiedSpots[new Vector2(priorPos.x, priorPos.y+ydir)])
+				moves.Add(new Vector2(priorPos.x, priorPos.y+ydir));
+
+		if(GameManager.occupiedSpots.ContainsKey(new Vector2(priorPos.x-1, priorPos.y+ydir)))
+			if(GameManager.occupiedSpots[new Vector2(priorPos.x-1, priorPos.y+ydir)])
+				if(GameManager.pieceLocation[new Vector2(priorPos.x-1, priorPos.y+ydir)].player_check() != is_player)
+					moves.Add(new Vector2(priorPos.x-1, priorPos.y+ydir));
+
+		if(GameManager.occupiedSpots.ContainsKey(new Vector2(priorPos.x+1, priorPos.y+ydir)))
+			if(GameManager.occupiedSpots[new Vector2(priorPos.x+1, priorPos.y+ydir)])
+				if(GameManager.pieceLocation[new Vector2(priorPos.x+1, priorPos.y+ydir)].player_check() != is_player)
+					moves.Add(new Vector2(priorPos.x+1, priorPos.y+ydir));
+
+		//En passant moves
+		if(firstMove)
 		{
-			//enPassant
-	    	if(y == 2 && firstMove && GameManager.occupiedSpots[new Vector2(move_here.x, move_here.y-1)])
-	    	{
-	    		if(!GameManager.pieceLocation[new Vector2(move_here.x, move_here.y-1)].player_check())
- 				{
- 					Vector2 remove_this = new Vector2(move_here.x, move_here.y-1);
-     				base.capture(remove_this);
-     			}
-	    	}
-			transform.position = move_here;
-	    	GameManager.pieceLocation.Remove(priorPos);
-			GameManager.occupiedSpots[priorPos] = false;
-			priorPos = new Vector2(transform.position.x, transform.position.y);
-			GameManager.pieceLocation.Add(priorPos,this);
-	    	if(firstMove)
-				firstMove = false;
-			GameManager.instance.playersTurn = !GameManager.instance.playersTurn;
-	    }
+			if(!GameManager.occupiedSpots[new Vector2(priorPos.x, priorPos.y+ydir*2)])
+			{
+				if(GameManager.occupiedSpots[new Vector2(priorPos.x, priorPos.y+ydir)])
+				{
+					if(GameManager.pieceLocation[new Vector2(priorPos.x, priorPos.y+ydir)].player_check() != is_player)
+					{
+						moves.Add(new Vector2(priorPos.x, priorPos.y+ydir*2));
+						kill_piece_behind = true;
+						en_passant = true;
+					}
+				}
+				else
+				{
+					moves.Add(new Vector2(priorPos.x, priorPos.y+ydir*2));
+					en_passant = true;
+				}
+			}
+		}
+		//Second rule will be added later
+		if(GameManager.occupiedSpots.ContainsKey(new Vector2(priorPos.x-1, priorPos.y)))
+			if(GameManager.occupiedSpots[new Vector2(priorPos.x-1, priorPos.y)])
+				if(GameManager.pieceLocation[new Vector2(priorPos.x-1, priorPos.y)].player_check() != is_player && GameManager.pieceLocation[new Vector2(priorPos.x-1, priorPos.y)].pawn_enpassant())
+				{
+					moves.Add(new Vector2(priorPos.x-1, priorPos.y+ydir));
+					kill_piece_behind = true;
+				}
+		if(GameManager.occupiedSpots.ContainsKey(new Vector2(priorPos.x+1, priorPos.y)))
+			if(GameManager.occupiedSpots[new Vector2(priorPos.x+1, priorPos.y)])
+				if(GameManager.pieceLocation[new Vector2(priorPos.x+1, priorPos.y)].player_check() != is_player && GameManager.pieceLocation[new Vector2(priorPos.x+1, priorPos.y)].pawn_enpassant())
+				{
+					moves.Add(new Vector2(priorPos.x+1, priorPos.y+ydir));
+					kill_piece_behind = true;
+				}
+        return moves;
     }
 
     //picks up the piece if it wasnt selected
@@ -140,13 +147,20 @@ public class pawn_mech : Piece
     }
 
     //places the piece down
-    private void land_piece_set()
+    public override void land_piece_set()
     {
-    	GameManager.occupiedSpots[new Vector2(transform.position.x, transform.position.y)] = true;
+    	GameManager.occupiedSpots[transform.position] = true;
+    	priorPos = transform.position;
 		gameObject.layer = 9;
 		thisPiece.sortingLayerName = "Piece";
 		GameManager.instance.hasPieceInHand = false;
 		selected = false;
+    }
+
+    private void refresh_piece()
+    {
+		GameManager.instance.reset_piece = true;
+		transform.position = priorPos;
     }
 
     //kills the object.
@@ -157,5 +171,19 @@ public class pawn_mech : Piece
     public override bool player_check()
     {
         return is_player;
+    }
+    public override bool pawn_enpassant()
+    {
+    	return en_passant;
+    }
+
+    private void pawn_promotion()
+    {
+    	transform.position = new Vector2(100, 100);
+    	GameManager.instance.promote_pawn(gridPos);
+        //calls a function to open a menu where the player can choose what piece they want
+        //after they pick, the pawn is destroyed and replaced with the piece theyve chosen
+
+        DestroyImmediate(this.gameObject);
     }
 }

@@ -13,6 +13,23 @@ public abstract class Piece : MonoBehaviour
     	GameManager.pieceLocation.Remove(remove_object_here);
     	GameManager.occupiedSpots[remove_object_here] = false;
     }
+
+    public virtual Vector2 move_piece(Vector2 old_pos, Vector2 move_here)
+    {
+        if(GameManager.occupiedSpots[move_here])
+        {
+            capture(move_here);
+        }
+        GameManager.pieceLocation.Remove(old_pos);
+        GameManager.occupiedSpots[old_pos] = false;
+        GameManager.pieceLocation.Add(move_here,this);
+        GameManager.instance.isPlayerTurn = !GameManager.instance.isPlayerTurn;
+        return move_here;
+    }
+    public virtual bool firstMoveCheck()
+    {
+        return false;
+    }
 	public virtual void kill()
 	{
 		Debug.Log("Broke");
@@ -21,106 +38,168 @@ public abstract class Piece : MonoBehaviour
 	{
 		return false;
 	}
-    public virtual Vector2 mouseToGrid(float x, float y)
+    public virtual void land_piece_set()
     {
-        Vector3 first = new Vector3(Mathf.Round(x), Mathf.Round(y), 10f);
+        Debug.Log("Broke");
+    }
+    public virtual bool pawn_enpassant()
+    {
+        return false;
+    }
+    public virtual Vector2 mouseToGrid(Vector2 location)
+    {
+        Vector3 first = new Vector3(Mathf.Round(location.x), Mathf.Round(location.y), 10f);
         Vector3 gridPos = Camera.main.ScreenToWorldPoint(first);
         gridPos = new Vector3(Mathf.Round(gridPos.x),Mathf.Round(gridPos.y),0);
         return gridPos;
     }
-    public virtual Vector2 move_piece(float x, float y, Vector2 move_here, Vector2 old_pos)
-    {
-    	bool refresh = false;
-    	Vector2 new_pos = old_pos;
-    	if(GameManager.occupiedSpots[move_here])
-    	{
-    		if(GameManager.pieceLocation[move_here].player_check() == GameManager.pieceLocation[old_pos].player_check())
-    			refresh = true;
-    		else
-				capture(move_here);
-    	}
-    	if(!refresh)
-		{
-			new_pos = move_here;
-	    	GameManager.pieceLocation.Remove(old_pos);
-			GameManager.occupiedSpots[old_pos] = false;
-			GameManager.pieceLocation.Add(new_pos,this);
-		}
-		else
-		{
-			Debug.Log("R2");
-			GameManager.instance.reset_piece = true;
-		}
-        GameManager.instance.playersTurn = !GameManager.instance.playersTurn;
-		return new_pos;
-    }
+
     //Creates bounds for rook, queen and bishop
-    public virtual float new_bound(float xdir, float ydir, bool xchange, bool ychange, Vector2 old_pos)
+    public virtual List<Vector2> horizontal_bounds(Vector2 old_pos)
     {
-        float newb = 0;
-        float ysign = 1;
-        float xsign = 1;
-        if(ychange == false)
-            ysign = -1;
-        if(xchange == false)
-            xsign = -1;
-        while(GameManager.occupiedSpots.ContainsKey(new Vector2(old_pos.x+(xdir*xsign), old_pos.y+(ydir*ysign))))
+        List<Vector2> moves = new List<Vector2>();
+        Vector2 temp = old_pos;
+        temp.x += 1;
+        while(GameManager.occupiedSpots.ContainsKey(temp))
         {
-            if(!GameManager.occupiedSpots[new Vector2(old_pos.x+(xdir*xsign), old_pos.y+(ydir*ysign))])
-            {
-                if(xdir == ydir)
-                {
-                    xdir++;
-                    ydir++;
-                }
-                else if(xdir == 0)
-                    ydir++;
-                else
-                    xdir++;
-            }
+            if(!GameManager.occupiedSpots[temp])
+                moves.Add(temp);
             else
             {
-                if(GameManager.pieceLocation[new Vector2(old_pos.x+(xdir*xsign), old_pos.y+(ydir*ysign))].player_check() != 
-                	GameManager.pieceLocation[old_pos].player_check())
-                {
-                    if(xdir == ydir)
-                    {
-                        xdir++;
-                        ydir++;
-                    }
-                    else if(xdir == 0)
-                        ydir++;
-                    else
-                        xdir++;
-                }
+                if(GameManager.pieceLocation[temp].player_check() != GameManager.pieceLocation[old_pos].player_check())
+                    moves.Add(temp);
                 break;
             }
+            temp.x += 1;
         }
-        if(xdir == 0)
-            newb = ydir;
-        else
-            newb = xdir;
-        if((old_pos.x == 7 || old_pos.x == 0) && newb == 1)
-            newb = 0;
-        else if((old_pos.y == 7 || old_pos.y == 0) && newb == 1)
-            newb = 0;
-        else
+
+        temp = old_pos;
+        temp.x -= 1;
+        while(GameManager.occupiedSpots.ContainsKey(temp))
         {
-            if(ydir != 0 && ydir != xdir)
+            if(!GameManager.occupiedSpots[temp])
+                moves.Add(temp);
+            else
             {
-                if(ychange)
-                    newb += ysign*-1;
-                else
-                    newb -= ysign*-1;
+                if(GameManager.pieceLocation[temp].player_check() != GameManager.pieceLocation[old_pos].player_check())
+                    moves.Add(temp);
+                break;
             }
-            if(xdir != 0)
-            {
-                if(xchange)
-                    newb += xsign*-1;
-                else
-                    newb -= xsign*-1;
-            }
+            temp.x -= 1;
         }
-        return newb;
+        return moves;
+    }
+
+    public virtual List<Vector2> vertical_bounds(Vector2 old_pos)
+    {
+        List<Vector2> moves = new List<Vector2>();
+        Vector2 temp = old_pos;
+        temp.y += 1;
+        while(GameManager.occupiedSpots.ContainsKey(temp))
+        {
+            if(!GameManager.occupiedSpots[temp])
+                moves.Add(temp);
+            else
+            {
+                if(GameManager.pieceLocation[temp].player_check() != GameManager.pieceLocation[old_pos].player_check())
+                    moves.Add(temp);
+                break;
+            }
+            temp.y += 1;
+        }
+        temp = old_pos;
+        temp.y -= 1;
+        while(GameManager.occupiedSpots.ContainsKey(temp))
+        {
+            if(!GameManager.occupiedSpots[temp])
+                moves.Add(temp);
+            else
+            {
+                if(GameManager.pieceLocation[temp].player_check() != GameManager.pieceLocation[old_pos].player_check())
+                    moves.Add(temp);
+                temp = old_pos;
+                break;
+            }
+            temp.y -= 1;
+        }
+        return moves;
+    }
+    //Creates bounds for rook, queen and bishop
+    public virtual List<Vector2> diagonal_bounds(Vector2 old_pos)
+    {
+        List<Vector2> moves = new List<Vector2>();
+        Vector2 temp = old_pos;
+        temp.y += 1;
+        temp.x += 1;
+        while(GameManager.occupiedSpots.ContainsKey(temp))
+        {
+            if(!GameManager.occupiedSpots[temp])
+                moves.Add(temp);
+            else
+            {
+                if(GameManager.pieceLocation[temp].player_check() != GameManager.pieceLocation[old_pos].player_check())
+                    moves.Add(temp);
+                break;
+            }
+            temp.y += 1;
+            temp.x += 1;
+        }
+
+        temp = old_pos;
+        temp.x -= 1;
+        temp.y += 1;
+        while(GameManager.occupiedSpots.ContainsKey(temp))
+        {
+            if(!GameManager.occupiedSpots[temp])
+                moves.Add(temp);
+            else
+            {
+                if(GameManager.pieceLocation[temp].player_check() != GameManager.pieceLocation[old_pos].player_check())
+                    moves.Add(temp);
+                break;
+            }
+            temp.x -= 1;
+            temp.y += 1;
+        }
+
+        temp = old_pos;
+        temp.y -= 1;
+        temp.x += 1;
+        while(GameManager.occupiedSpots.ContainsKey(temp))
+        {
+            if(!GameManager.occupiedSpots[temp])
+                moves.Add(temp);
+            else
+            {
+                if(GameManager.pieceLocation[temp].player_check() != GameManager.pieceLocation[old_pos].player_check())
+                    moves.Add(temp);
+                break;
+            }
+            temp.y -= 1;
+            temp.x += 1;
+        }
+
+        temp = old_pos;
+        temp.x -= 1;
+        temp.y -= 1;
+        while(GameManager.occupiedSpots.ContainsKey(temp))
+        {
+            if(!GameManager.occupiedSpots[temp])
+                moves.Add(temp);
+            else
+            {
+                if(GameManager.pieceLocation[temp].player_check() != GameManager.pieceLocation[old_pos].player_check())
+                    moves.Add(temp);
+                break;
+            }
+            temp.x -= 1;
+            temp.y -= 1;
+        }
+        return moves;
+    }
+    public virtual bool is_in_check(Vector2 old_pos)
+    {
+        bool in_check = false;
+        return in_check;
     }
 }
