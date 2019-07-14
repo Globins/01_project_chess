@@ -1,1 +1,1 @@
-# 01_project_chess_ai
+# 01_project_chess
