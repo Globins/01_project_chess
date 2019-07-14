@@ -39,18 +39,26 @@ public class GameManager : MonoBehaviour
         if((white_moves.Count == 0 && !white_is_in_check()) || (black_moves.Count == 0 && !black_is_in_check()))
         {
             Moves_Box.force_print("Stalemate!");
-            UnityEditor.EditorApplication.isPlaying = false;
+            StartCoroutine("quitGame");
+
         }
         if((white_moves.Count == 0 && white_is_in_check()) || !pieceLocation.ContainsValue(wking_location))
         {
             Moves_Box.force_print("Black Victory!");
-            UnityEditor.EditorApplication.isPlaying = false;
+            StartCoroutine("quitGame");
+
         }
         if((black_moves.Count == 0 && black_is_in_check()) || !pieceLocation.ContainsValue(bking_location))
         {
             Moves_Box.force_print("White Victory!");
-            UnityEditor.EditorApplication.isPlaying = false;
+            StartCoroutine("quitGame");
+            
         }
+    }
+    IEnumerator quitGame()
+    {
+        yield return new WaitForSeconds(5);
+        UnityEditor.EditorApplication.isPlaying = false;
     }
     public void promote(Vector2 pos)
     {
