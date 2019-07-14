@@ -39,7 +39,13 @@ public abstract class Piece : MonoBehaviour
 	}
     public virtual void land_piece_set()
     {
-        Debug.Log("Broke");
+        GameManager.instance.get_white_moves();
+        GameManager.instance.get_black_moves();
+        GameManager.instance.check_game_end();
+        if(GameManager.instance.black_is_in_check())
+            Moves_Box.force_print("Black is in check!");
+        if(GameManager.instance.white_is_in_check())
+            Moves_Box.force_print("White is in check!");
     }
     public virtual bool pawn_enpassant()
     {
@@ -48,6 +54,11 @@ public abstract class Piece : MonoBehaviour
     public virtual void change_player()
     {
         Debug.Log("Broke");
+    }
+    public virtual List<Vector2> get_moves()
+    {
+        Debug.Log("Broke");
+        return new List<Vector2>();
     }
     public virtual Vector2 mouseToGrid(Vector2 location)
     {

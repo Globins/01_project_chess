@@ -73,7 +73,7 @@ public class pawn_mech : Piece
 		}
     }
 
-    private List<Vector2> get_moves()
+    public override List<Vector2> get_moves()
     {
     	if(GameManager.instance.isPlayerTurn == is_player)
     		en_passant = false;
@@ -116,7 +116,6 @@ public class pawn_mech : Piece
 					{
 						moves.Add(new Vector2(priorPos.x, priorPos.y+ydir*2));
 						GameManager.instance.show_highlight(new Vector2(priorPos.x, priorPos.y+ydir*2), true);
-						GameManager.instance.show_highlight(new Vector2(priorPos.x, priorPos.y+ydir), false);
 						kill_piece_behind = true;
 						en_passant = true;
 					}
@@ -189,6 +188,7 @@ public class pawn_mech : Piece
 		thisPiece.sortingLayerName = "Piece";
 		GameManager.instance.hasPieceInHand = false;
 		selected = false;
+		base.land_piece_set();
     }
 
     private void refresh_piece()

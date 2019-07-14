@@ -14,6 +14,7 @@ public class king_mech : Piece
     private bool is_player = false;
     private bool can_castle_l = false;
     private bool can_castle_r = false;
+    private List<Vector2> enemyMoves;
     // Start is called before the first frame update
     void Start()
     {
@@ -24,6 +25,10 @@ public class king_mech : Piece
             is_player = true;
         if(GameManager.instance.gameStarted)
             is_player = !is_player;
+        if(is_player)
+            GameManager.wking_location = GameManager.pieceLocation[priorPos];
+        else
+            GameManager.bking_location = GameManager.pieceLocation[priorPos];
     }
     // Update is called once per frame
     void Update()
@@ -79,7 +84,7 @@ public class king_mech : Piece
         }
     }
 
-    private List<Vector2> get_moves()
+    public override List<Vector2> get_moves()
     {
         List<Vector2> moves = new List<Vector2>();
         List<Vector2> spaces = new List<Vector2>();
@@ -91,16 +96,21 @@ public class king_mech : Piece
         spaces.Add(new Vector2(priorPos.x, priorPos.y+1));
         spaces.Add(new Vector2(priorPos.x+1, priorPos.y));
         spaces.Add(new Vector2(priorPos.x-1, priorPos.y));
+        if(this.name == "bking(Clone)")
+            enemyMoves = GameManager.white_moves;
+        if(this.name == "wking(Clone)")
+            enemyMoves = GameManager.black_moves;
         if(firstMove)
         {
             can_castle_l = can_castle_left();
-            if(can_castle_l)
+            can_castle_r = can_castle_right();
+            GameManager.instance.remove_highlights();
+            if(can_castle_l && (!enemyMoves.Contains(new Vector2(priorPos.x-1, priorPos.y)) || !enemyMoves.Contains(new Vector2(priorPos.x-2, priorPos.y))))
             {
                 moves.Add(new Vector2(priorPos.x-2, priorPos.y));
                 GameManager.instance.show_highlight(new Vector2(priorPos.x-2, priorPos.y),true);
             }
-            can_castle_r = can_castle_right();
-            if(can_castle_r)
+            if(can_castle_r && (!enemyMoves.Contains(new Vector2(priorPos.x+1, priorPos.y)) || !enemyMoves.Contains(new Vector2(priorPos.x+2, priorPos.y))))
             {
                 moves.Add(new Vector2(priorPos.x+2, priorPos.y));
                 GameManager.instance.show_highlight(new Vector2(priorPos.x+2, priorPos.y),true);
@@ -120,7 +130,7 @@ public class king_mech : Piece
                         GameManager.instance.show_highlight(temp,false);
                     }
                 }
-                else
+                else if(!enemyMoves.Contains(temp))
                 {
                     moves.Add(temp);
                     GameManager.instance.show_highlight(temp,true);
@@ -149,6 +159,7 @@ public class king_mech : Piece
         thisPiece.sortingLayerName = "Piece";
         GameManager.instance.hasPieceInHand = false;
         selected = false;
+        base.land_piece_set();
     }
 
     private void refresh_piece()
@@ -169,7 +180,6 @@ public class king_mech : Piece
     private bool can_castle_left()
     {
         List<Vector2> horz_moves = base.horizontal_bounds(priorPos);
-        GameManager.instance.remove_highlights();
         if(horz_moves.Contains(new Vector2(priorPos.x-3, priorPos.y)))
             if(GameManager.occupiedSpots[new Vector2(priorPos.x-4, priorPos.y)])
                 if(GameManager.pieceLocation[new Vector2(priorPos.x-4, priorPos.y)].player_check() == is_player)
@@ -181,7 +191,6 @@ public class king_mech : Piece
     private bool can_castle_right()
     {
         List<Vector2> horz_moves = base.horizontal_bounds(priorPos);
-        GameManager.instance.remove_highlights();
         if(horz_moves.Contains(new Vector2(priorPos.x+2, priorPos.y)))
             if(GameManager.occupiedSpots[new Vector2(priorPos.x+3, priorPos.y)])
                 if(GameManager.pieceLocation[new Vector2(priorPos.x+3, priorPos.y)].player_check() == is_player)

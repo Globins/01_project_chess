@@ -57,7 +57,7 @@ public class queen_mech : Piece
         }
     }
 
-    private List<Vector2> get_moves()
+    public override List<Vector2> get_moves()
     {
         List<Vector2> moves = new List<Vector2>();
         List<Vector2> horz_moves = base.horizontal_bounds(priorPos);
@@ -88,6 +88,7 @@ public class queen_mech : Piece
         thisPiece.sortingLayerName = "Piece";
         GameManager.instance.hasPieceInHand = false;
         selected = false;
+        base.land_piece_set();
     }
 
     private void refresh_piece()

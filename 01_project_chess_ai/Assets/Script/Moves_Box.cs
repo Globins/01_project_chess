@@ -37,6 +37,10 @@ public class Moves_Box : MonoBehaviour
     	string move = coordinate_convert(location);
     	moves_made.Add(piece_name + " to " + move);
     }
+    public static void force_print(string print)
+    {
+        moves_made.Add(print);
+    }
     private static string name_convert(string name)
     {
     	string adjusted = "";
